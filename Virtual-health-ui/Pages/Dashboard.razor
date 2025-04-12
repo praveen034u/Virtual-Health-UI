@@ -1,0 +1,73 @@
+﻿@page "/dashboard"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject SecureStorageService SecureStorage
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+<h2>Welcome, @userName!</h2>
+
+@if (recommendedJobs == null)
+{
+    <p>Loading job recommendations...</p>
+}
+else if (recommendedJobs.Count == 0)
+{
+    <p>No recommendations found. Update your profile to get better matches!</p>
+}
+else
+{
+    <h3>Recommended Jobs for You</h3>
+    <ul>
+        @foreach (var job in recommendedJobs)
+        {
+            <li>
+                <strong>@job.Title</strong> - @job.Description
+            </li>
+        }
+    </ul>
+}
+
+
+
+@code {
+    private string userId;
+    private string userName = "User";
+    private List<Job> recommendedJobs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            userId = user.FindFirst(c => c.Type == "sub")?.Value;
+            //userName = user.Identity.Name;
+            await FetchUserProfile(userId);
+            await FetchJobRecommendations(userId);
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task FetchUserProfile(string userId)
+    {
+        userId = "{userId}";
+        string roleId = "{roleId}";
+        var userProfile = await Http.GetFromJsonAsync<UserProfile>($"/api/user/{userId}/{roleId}");
+        if (userProfile != null)
+        {
+            userName = string.Format("{0}, { 1}",userProfile.Name.FirstName, userProfile.Name.LastName);
+        }
+    }
+
+    private async Task FetchJobRecommendations(string userId)
+    {
+        userId = "{userId}";
+        recommendedJobs = await Http.GetFromJsonAsync<List<Job>>($"/api/jobs/recommend/{userId}");
+    }
+}

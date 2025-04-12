@@ -1,0 +1,30 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<AuthorizeView>
+    <Authorized>
+        Hello, @context.User.Identity?.Name!
+        <button class="nav-link btn btn-link" @onclick="BeginLogOut">Log out</button>
+    </Authorized>
+    <NotAuthorized>
+        <SkillBridgeHome />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+
+    private async Task BeginLogOut()
+    {
+        var auth0Domain = "dev-jbrriuc5vyjmiwtx.us.auth0.com";
+        var clientId = "EOMCZTuZXxjFh6iWbQRxZANCslzTncYl";
+        var returnUrl = Navigation.BaseUri; // Ensures return to home after logout
+
+        var logoutUrl = $"https://{auth0Domain}/v2/logout?client_id={clientId}&returnTo={Uri.EscapeDataString(returnUrl)}";
+
+        await JSRuntime.InvokeVoidAsync("logoutAuth0", logoutUrl);
+    }
+
+   
+}
+    

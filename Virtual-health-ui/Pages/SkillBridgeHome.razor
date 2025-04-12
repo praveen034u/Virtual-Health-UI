@@ -1,0 +1,158 @@
+﻿@page "/"
+
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject SecureStorageService SecureStorage
+@inject HttpClient HttpClient
+
+<PageTitle>SkillBridgeHome</PageTitle>
+
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <section class="text-center bg-dark text-white py-5">
+        <div class="container">
+            <h1 class="display-4 fw-bold">Welcome to SkillBridge</h1>
+            <p class="lead">Connecting underprivileged talents with opportunities</p>
+            <button @onclick="ShowLoginWidget" class="btn btn-light btn-lg mt-3">Get Started</button>
+        </div>
+    </section>
+
+    <!-- Auth0 Login Widget Container -->
+    <section class="py-5 text-center">
+        <div id="auth0-login-container"></div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-4 text-dark">Why Choose SkillBridge?</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm border-0">
+                        <div class="card-body">
+                            <h3 class="card-title text-primary">Skill Matching</h3>
+                            <p class="card-text">AI-powered matchmaking connects you with relevant job opportunities.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm border-0">
+                        <div class="card-body">
+                            <h3 class="card-title text-success">Mentorship</h3>
+                            <p class="card-text">Get guidance from industry experts to build a successful career.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm border-0">
+                        <div class="card-body">
+                            <h3 class="card-title text-warning">Remote Learning</h3>
+                            <p class="card-text">Access skill-enhancing courses and resources tailored to your needs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call-to-Action Section -->
+    <section class="text-center bg-secondary text-white py-5">
+        <h2 class="fw-bold">Start Your Journey Today!</h2>
+        @*  <button @onclick="ShowLoginWidget" class="btn btn-dark btn-lg mt-3">Sign Up Now</button> *@
+    </section>
+</div>
+
+@code {
+
+    private static NavigationManager _navigationManager;
+    private static SecureStorageService _secureStorage;
+    private static IJSRuntime _jsRuntime;
+    private static HttpClient _httpClient;
+
+    protected override void OnInitialized()
+    {
+        _navigationManager = Navigation;
+        _secureStorage = SecureStorage;
+        _jsRuntime = JSRuntime;
+        _httpClient = HttpClient;
+    }
+
+    private async Task ShowLoginWidget()
+    {
+        await _jsRuntime.InvokeVoidAsync("showAuth0Login");
+    }
+
+    [JSInvokable]
+    public static async Task OnAuthSuccess()
+    {
+        Console.WriteLine("Login successful! Redirecting to Weather page...");
+
+        // Retrieve token from localStorage (set by JavaScript)
+        var accessToken = await _secureStorage.GetItemAsync("access_token");
+        var userSecureProfileJson = await _secureStorage.GetItemAsync("user_profile");
+
+        if (string.IsNullOrEmpty(userSecureProfileJson) && string.IsNullOrEmpty(accessToken))
+        {
+            Console.WriteLine("User profile missing in local storage.");
+            _navigationManager.NavigateTo("/", forceLoad: true);
+            return;
+        }
+
+        string userId = await _secureStorage.GetSecureUserIdAsync(userSecureProfileJson);
+        await _secureStorage.SetItemAsync("user_id", userId);
+        if (string.IsNullOrEmpty(userId))
+        {
+            Console.WriteLine("User ID not found, redirecting to Create Profile.");
+            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
+            return;
+        }
+
+        // Check profile from API
+        //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var response = await _httpClient.GetAsync($"api/userprofiles/{userId}");
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Profile not found, redirecting to Create Profile.");
+            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
+            return;
+        }
+
+        var profileJsonData = await response.Content.ReadAsStringAsync();
+        var profile = await _secureStorage.GetUserProfileAsync(profileJsonData);
+
+        if (profile == null)
+        {
+            Console.WriteLine("Invalid profile response, redirecting to Create Profile.");
+            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
+            return;
+        }
+        _secureStorage.SetItemAsync("sb_user_profile", profileJsonData);
+        _secureStorage.SetItemAsync("user_role", profile.Role);
+
+        // Redirect based on role
+        if (profile.Role == "Employee")
+        {
+            Console.WriteLine("Redirecting to Employee Dashboard.");
+            _navigationManager.NavigateTo("/employee-dashboard", forceLoad: true);
+        }
+        else if (profile.Role == "Employer")
+        {
+            Console.WriteLine("Redirecting to Employer Dashboard.");
+            _navigationManager.NavigateTo("/employer-dashboard", forceLoad: true);
+        }
+        else
+        {
+            Console.WriteLine("Unknown role, redirecting to Create Profile.");
+            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
+        }
+           
+    }
+
+    [JSInvokable]
+    public async static Task OnLogoutSuccess()
+    {
+        Console.WriteLine("User logged out successfully.");
+        _navigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

@@ -1,0 +1,123 @@
+﻿@page "/post-job"
+@inject HttpClient Http
+@inject SecureStorageService SecureStorage
+
+@using System.ComponentModel.DataAnnotations
+
+<h3>Post a Job</h3>
+
+@if (!string.IsNullOrEmpty(SuccessMessage))
+{
+    <div class="alert alert-success">
+        @SuccessMessage
+        <button @onclick="ClearSuccessMessage" class="btn-close" aria-label="Close"></button>
+    </div>
+}
+
+<EditForm Model="job" OnValidSubmit="HandleJobPost">
+    <DataAnnotationsValidator />
+
+    <div>
+        <label>Job Title:</label>
+        <InputText @bind-Value="job.Title" class="form-control" required />
+    </div>
+
+    <div>
+        <label>Company Name:</label>
+        <InputText @bind-Value="job.Company" class="form-control" required />
+    </div>
+
+    <div>
+        <label>Job Description:</label>
+        <InputTextArea @bind-Value="job.Description" class="form-control" rows="4" required />
+    </div>
+
+    <div>
+        <label>Required Skills (comma-separated):</label>
+        <InputText @bind-Value="requiredSkillsInput" class="form-control" />
+    </div>
+
+    <div>
+        <label>Required Experience(Years):</label>
+        <InputNumber @bind-Value="job.MinExperience" class="form-control" rows="4" required />
+    </div>
+
+
+    <div>
+        <label>Location:</label>
+        <InputText @bind-Value="job.Location" class="form-control" />
+    </div>
+
+    <div>
+        <label>Employment Type:</label>
+        <select @bind="job.JobType" class="form-control">
+            <option value="Full-Time">Full-Time</option>
+            <option value="Part-Time">Part-Time</option>
+            <option value="Internship">Internship</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Salary (optional):</label>
+        <InputNumber @bind-Value="job.Salary" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Post Job</button>
+</EditForm>
+
+@if (isJobPosted)
+{
+    <div class="alert alert-success mt-3">
+        Job posted successfully!
+    </div>
+}
+
+@code {
+    private Job job = new Job();
+    private string requiredSkillsInput = "";
+    private bool isJobPosted = false;
+    private string SuccessMessage { get; set; } = "";
+
+    private async void HandleJobPost()
+    {
+        // Convert skills input into list
+        job.RequiredSkills = requiredSkillsInput.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                                .Select(s => s.Trim())
+                                                .ToList();
+        job.EmployerId = await SecureStorage.GetUserIdAsync();
+        job.PostedDate = DateTime.UtcNow;
+        var response = await Http.PostAsJsonAsync("/api/Jobs/post", job);
+
+        Console.WriteLine($"Job '{job.Title}' posted successfully!");
+
+        // isJobPosted = true;
+
+        if (response.IsSuccessStatusCode)
+        {
+            SuccessMessage = "Job posted successfully!";
+            ClearForm();
+
+        }
+        else
+        {
+            SuccessMessage = "Failed to post job.";
+        }
+    }
+    private void ClearSuccessMessage()
+    {
+        SuccessMessage = "";
+    }
+    private void ClearForm()
+    {
+        job.Title = "";
+        job.Company = "";
+        job.Description = "";
+        requiredSkillsInput = "";
+        job.MinExperience = 0;
+        job.Location = "";
+        job.JobType = "";
+        job.Salary = 0;
+
+    }
+
+}

@@ -1,0 +1,41 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject SecureStorageService SecureStorage
+
+<div class="page">
+
+    @if (!Navigation.Uri.Contains("SkillBridgehome") && !Navigation.Uri.EndsWith("/") && !Navigation.Uri.EndsWith("/#"))
+        {
+        if (userRole == "Employer")
+        {
+           <div class="sidebar">
+            <NavMenuEmployer />
+           </div>
+        }
+        else if (userRole == "Employee")
+            {
+                 <div class="sidebar">
+                  <NavMenuEmployee />
+                 </div>
+            }
+        }
+    
+
+    <main>
+        <div class="top-row px-4 auth">
+             <LoginDisplay /> 
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+@code {
+	private string userRole;
+	protected override async Task OnInitializedAsync()
+	{
+		userRole = await SecureStorage.GetItemAsync("user_role");
+	}
+}
