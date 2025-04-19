@@ -49,7 +49,7 @@
                     2. Primary Care Provider
                 </button>
             </h2>
-            <div id="collapseProvider" class="accordion-collapse collapse">
+            <div id="collapseProvider" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
                 <div class="accordion-body">
                     <InputText @bind-Value="patientProfile.ProviderName" class="form-control mb-2" placeholder="Provider Name" />
                     <InputText @bind-Value="patientProfile.ProviderEmail" class="form-control mb-2" placeholder="Provider Email" />
@@ -65,7 +65,7 @@
                     3. Insurance Information
                 </button>
             </h2>
-            <div id="collapseInsurance" class="accordion-collapse collapse">
+            <div id="collapseInsurance" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
                 <div class="accordion-body">
                     <InputText @bind-Value="patientProfile.InsuranceProvider" class="form-control mb-2" placeholder="Insurance Provider" />
                     <InputText @bind-Value="patientProfile.PolicyNumber" class="form-control mb-2" placeholder="Policy Number" />
@@ -80,7 +80,7 @@
                     4–8. Medical, Family History, Medications, Visit Reason, Lifestyle
                 </button>
             </h2>
-            <div id="collapseMedical" class="accordion-collapse collapse">
+            <div id="collapseMedical" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
                 <div class="accordion-body">
                     <label>4. Medical History</label>
                     <InputTextArea @bind-Value="patientProfile.MedicalHistory" class="form-control mb-3" rows="3" placeholder="Past illnesses, allergies, surgeries..." />
@@ -107,7 +107,7 @@
                     9. Consent Forms
                 </button>
             </h2>
-            <div id="collapseConsent" class="accordion-collapse collapse">
+            <div id="collapseConsent" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
                 <div class="accordion-body">
                     <div class="form-check">
                         <InputCheckbox @bind-Value="patientProfile.ConsentTreatment" class="form-check-input" />
@@ -132,7 +132,7 @@
                     10. Vitals: Blood Pressure & Heart Rate
                 </button>
             </h2>
-            <div id="collapseVitals" class="accordion-collapse collapse">
+            <div id="collapseVitals" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
                 <div class="accordion-body">
                     <div class="form-group">
                         <label>Blood Pressure (mm Hg) <small>(e.g., 120/80)</small></label>
