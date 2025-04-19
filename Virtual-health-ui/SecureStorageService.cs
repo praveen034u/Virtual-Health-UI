@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
-using SkillBridge.UI;
+using VirtualHealth.UI;
 
 public class SecureStorageService
 {

@@ -20,7 +20,7 @@
 
             console.log("Auth success, invoking Blazor method...");
 
-            DotNet.invokeMethodAsync("SkillBridge.UI", "OnAuthSuccess")
+            DotNet.invokeMethodAsync("VirtualHealth.UI", "OnAuthSuccess")
                 .then(() => console.log("Blazor method invoked successfully!"))
                 .catch(err => console.error("Blazor invoke error:", err));
         });

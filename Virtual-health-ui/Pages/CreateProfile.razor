@@ -1,370 +1,200 @@
 ﻿@page "/create-profile"
-@using System.Text.Json
-@inject HttpClient Http
-@inject NavigationManager Navigation
-@inject IJSRuntime JSRuntime
-@inject SecureStorageService SecureStorage
-@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@inject IJSRuntime JS
 
-<PageTitle>Profile Settings</PageTitle>
+<h3 class="mt-4 mb-4 text-primary">Create Patient Profile</h3>
 
-<div class="container mt-5">
-    <h2 class="text-center">Profile Settings</h2>
+<EditForm Model="@patientProfile" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-    <!-- Role Selection -->
-    @if (string.IsNullOrEmpty(UserRole))
-    {
-        <div class="text-center mb-4">
-            <h5>Select Your Role:</h5>
-            <button class="btn btn-primary m-2" @onclick="@(() => SelectRole("Employee"))">I am an Employee</button>
-            <button class="btn btn-success m-2" @onclick="@(() => SelectRole("Employer"))">I am an Employer</button>
-        </div>
-    }
-    else
-    {
-        <EditForm Model="@userProfile" OnValidSubmit="SubmitProfile">
-            <DataAnnotationsValidator />
-            <div class="card p-4 shadow-sm">
-                <h4 class="text-center">@UserRole Profile</h4>
-
-                <!-- Common Fields -->
-                <div class="mb-3">
-                    <label class="form-label">First Name</label>
-                    <InputText class="form-control" @bind-Value="userProfile.Name.FirstName" required />
-                    <label class="form-label">Last Name</label>
-                    <InputText class="form-control" @bind-Value="userProfile.Name.LastName" required />
+    <div class="accordion" id="profileAccordion">
+        <!-- Personal Details -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingPersonal">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePersonal" aria-expanded="true" aria-controls="collapsePersonal">
+                    1. Personal Details
+                </button>
+            </h2>
+            <div id="collapsePersonal" class="accordion-collapse collapse show" aria-labelledby="headingPersonal" data-bs-parent="#profileAccordion">
+                <div class="accordion-body">
+                    <div class="form-group">
+                        <label>Full Name <span class="text-danger">*</span></label>
+                        <InputText @bind-Value="patientProfile.FullName" class="form-control" placeholder="John Doe" />
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth <span class="text-danger">*</span></label>
+                        <InputDate @bind-Value="patientProfile.DateOfBirth" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <InputText @bind-Value="patientProfile.Address" class="form-control" placeholder="123 Main St, Springfield" />
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <InputText @bind-Value="patientProfile.PhoneNumber" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact Info</label>
+                        <InputText @bind-Value="patientProfile.EmergencyContact" class="form-control" placeholder="Jane Doe - (123) 456-7890" />
+                    </div>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Phone Number</label>
-                    <InputText class="form-control" @bind-Value="userProfile.PhoneNumber" required />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Street</label>
-                    <InputText class="form-control" @bind-Value="userProfile.Address.Street" />
-                    <label class="form-label">City</label>
-                    <InputText class="form-control" @bind-Value="userProfile.Address.City" />
-                    <label class="form-label">State</label>
-                    <InputText class="form-control" @bind-Value="userProfile.Address.State" />
-                    <label class="form-label">Zip Code</label>
-                    <InputText class="form-control" @bind-Value="userProfile.Address.ZipCode" />
-                    <label class="form-label">Country</label>
-                    <InputText class="form-control" @bind-Value="userProfile.Address.Country" />
-                </div>
-
-                <!-- Employee-Specific Fields -->
-                @if (UserRole == "Employee")
-                {
-
-                    <div class="mb-3">
-                        <label class="form-label">Upload Resume</label>
-                        <div>
-                            <label>Upload Resume</label>
-                            <InputFile OnChange="UploadResume" />
-                            <button type="button" class="btn btn-primary" @onclick="OpenPopup">Upload </button>
-                        </div>
-
-                        @if (showModal)
-                        {
-                            <div class="modal">
-                                <div class="modal-content">
-                                    <h4>Document Intelligence Extracted Skills</h4>
-                                    <div>
-                                        @foreach (var skill in extractedSkills)
-                                        {
-                                            <div>
-                                                <input type="text" value="@skill" />
-                                                <button @onclick="() => RemoveSkill(skill)">X</button>
-                                            </div>
-                                        }
-                                    </div>
-                                    <button @onclick="ApproveSkills">Approve</button>
-                                    <button @onclick="CloseModal">Deny</button>
-                                </div>
-                            </div>
-                        }
-                        @* todo for Jitendra  *@
-
-                        @* <InputFile class="form-control" @bind-Value="userProfile.EmployeeProfile.Resume" required /> *@
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Years of Experience</label>
-                        <InputNumber class="form-control" @bind-Value="userProfile.EmployeeProfile.YearsOfExperience" required />
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="mb-3">
-                             <div class="mb-2" hidden="@(string.IsNullOrEmpty(extSkillsText))">
-                                <input type="text" id="extskills" class="form-control" @bind="extSkillsText" readonly />
-                            </div>
-                            <label class="form-label">Skills</label>
-                           
-                            @foreach (var skill in userProfile.EmployeeProfile.Skills)
-                            {
-
-                                <div class="row mb-2">
-                                    <div class="col">
-                                        <label class="form-label">Skill Name</label>
-                                        <InputText class="form-control" @bind-Value="skill.Name" />
-                                    </div>
-                                    <div class="col">
-                                        <label class="form-label">Proficiency</label>
-                                        <InputNumber class="form-control" @bind-Value="skill.ProficiencyLevel" />
-                                    </div>
-                                </div>
-                                <div class="mb-2">
-                                    <button type="button" class="btn btn-danger" @onclick="@(() => RemoveSkill(skill))">Remove</button>
-                                </div>
-                            }
-                            <div class="mb-2">
-                                <button type="button" class="btn btn-secondary" @onclick="AddSkill">Add Skill</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Certifications</label>
-
-                        <div class="mb-2">
-                            <InputText class="form-control" @bind-value="certifications" />
-                        </div>
-                        @*  <div class="mb-2">
-                            <button type="button" class="btn btn-secondary" @onclick="AddCertification">Add Certification</button>
-                        </div> *@
-                    </div>
-                } else if (UserRole == "Employer")
-                {
-                    <div class="mb-3">
-                        <label class="form-label">Company Name</label>
-                        <InputText class="form-control" @bind-Value="userProfile.EmployerProfile.CompanyName" required />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Company Website</label>
-                        <InputText class="form-control" @bind-Value="userProfile.EmployerProfile.CompanyWebsiteUrl" />
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="mb-3">
-                            <label class="form-label">Company Locations</label>
-                            @foreach (var companyLocation in userProfile.EmployerProfile.CompanyLocations)
-                            {
-
-                                <div class="row mb-2">
-                                    <div class="col">
-                                        <label class="form-label">Streat</label>
-                                        <InputText class="form-control" @bind-Value="companyLocation.Address" />
-                                    </div>
-                                    <div class="col">
-                                        <label class="form-label">City</label>
-                                        <InputNumber class="form-control" @bind-Value="companyLocation.City" />
-                                    </div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col">
-                                        <label class="form-label">State</label>
-                                        <InputText class="form-control" @bind-Value="companyLocation.State" />
-                                    </div>
-                                    <div class="col">
-                                        <label class="form-label">Country</label>
-                                        <InputNumber class="form-control" @bind-Value="companyLocation.Country" />
-                                    </div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col">
-                                        <label class="form-label">Zip Code</label>
-                                        <InputNumber class="form-control" @bind-Value="companyLocation.ZipCode" />
-                                    </div>
-                                </div>
-                                <div class="mb-2">
-                                    <button type="button" class="btn btn-danger" @onclick="@(() => RemoveLocation(companyLocation))">Remove</button>
-                                </div>
-                            }
-                            <div class="mb-2">
-                                <button type="button" class="btn btn-secondary" @onclick="AddLocation">Add Skill</button>
-                            </div>
-                        </div>
-                    </div>
-                }
-
-                @if (!isUserProfileFound)
-                {
-                    <button type="submit" class="btn btn-primary w-100">Create Profile</button>
-
-                    <!-- Option to go back and change role -->
-                    <div class="text-center mt-3">
-                        <a href="javascript:void(0);" @onclick="ResetRole">Change Role</a>
-                    </div>
-                }
-                else
-                {
-                    <button type="submit" class="btn btn-primary w-100">Update Profile</button>
-                }
             </div>
-        </EditForm>
-    }
-</div>
+        </div>
+
+        <!-- Provider -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingProvider">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProvider">
+                    2. Primary Care Provider
+                </button>
+            </h2>
+            <div id="collapseProvider" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <InputText @bind-Value="patientProfile.ProviderName" class="form-control mb-2" placeholder="Provider Name" />
+                    <InputText @bind-Value="patientProfile.ProviderEmail" class="form-control mb-2" placeholder="Provider Email" />
+                    <InputText @bind-Value="patientProfile.ProviderPhone" class="form-control mb-2" placeholder="Provider Phone" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Insurance -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingInsurance">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInsurance">
+                    3. Insurance Information
+                </button>
+            </h2>
+            <div id="collapseInsurance" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <InputText @bind-Value="patientProfile.InsuranceProvider" class="form-control mb-2" placeholder="Insurance Provider" />
+                    <InputText @bind-Value="patientProfile.PolicyNumber" class="form-control mb-2" placeholder="Policy Number" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Details -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingMedical">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMedical">
+                    4–8. Medical, Family History, Medications, Visit Reason, Lifestyle
+                </button>
+            </h2>
+            <div id="collapseMedical" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <label>4. Medical History</label>
+                    <InputTextArea @bind-Value="patientProfile.MedicalHistory" class="form-control mb-3" rows="3" placeholder="Past illnesses, allergies, surgeries..." />
+
+                    <label>5. Family Medical History</label>
+                    <InputTextArea @bind-Value="patientProfile.FamilyMedicalHistory" class="form-control mb-3" rows="2" placeholder="e.g., Diabetes, Heart Disease" />
+
+                    <label>6. Current Medications</label>
+                    <InputTextArea @bind-Value="patientProfile.CurrentMedications" class="form-control mb-3" rows="2" placeholder="e.g., Aspirin 100mg daily, Vitamin D" />
+
+                    <label>7. Reason for Visit</label>
+                    <InputTextArea @bind-Value="patientProfile.ReasonForVisit" class="form-control mb-3" rows="2" placeholder="e.g., chest pain, regular checkup" />
+
+                    <label>8. Lifestyle Information</label>
+                    <InputTextArea @bind-Value="patientProfile.Lifestyle" class="form-control mb-3" rows="3" placeholder="e.g., Smoker, Vegetarian, Exercise 3x/week" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Consent -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingConsent">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConsent">
+                    9. Consent Forms
+                </button>
+            </h2>
+            <div id="collapseConsent" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <div class="form-check">
+                        <InputCheckbox @bind-Value="patientProfile.ConsentTreatment" class="form-check-input" />
+                        <label class="form-check-label">I consent to treatment</label>
+                    </div>
+                    <div class="form-check">
+                        <InputCheckbox @bind-Value="patientProfile.ConsentPrivacy" class="form-check-input" />
+                        <label class="form-check-label">I agree to the privacy policy</label>
+                    </div>
+                    <div class="form-check">
+                        <InputCheckbox @bind-Value="patientProfile.ConsentBilling" class="form-check-input" />
+                        <label class="form-check-label">I agree to the billing terms</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vitals -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingVitals">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVitals">
+                    10. Vitals: Blood Pressure & Heart Rate
+                </button>
+            </h2>
+            <div id="collapseVitals" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                    <div class="form-group">
+                        <label>Blood Pressure (mm Hg) <small>(e.g., 120/80)</small></label>
+                        <InputText @bind-Value="patientProfile.BloodPressure" class="form-control" />
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Resting Heart Rate (bpm)</label>
+                        <InputNumber @bind-Value="patientProfile.HeartRate" class="form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column flex-md-row mt-4">
+        <button type="submit" class="btn btn-primary mb-2 mb-md-0 me-md-2">Submit</button>
+        <button type="button" class="btn btn-secondary" @onclick="GenerateSummary">Download Summary</button>
+    </div>
+</EditForm>
 
 @code {
+    private PatientProfileModel patientProfile = new();
 
-    private bool showModal = false;
-    private List<string> extractedSkills = new();
-    private string UserRole;
-    private bool isUserProfileFound;
-
-    protected override async Task OnInitializedAsync()
-    { 
-        isUserProfileFound = false;
-        var userProfileJson = await SecureStorage.GetItemAsync("sb_user_profile");
-        if (userProfileJson != null)
-        {
-            userProfile = await SecureStorage.GetUserProfileAsync(userProfileJson);
-            UserRole = await SecureStorage.GetItemAsync("user_role");
-            isUserProfileFound =true;
-        }
-    }
-
-    private async Task UploadResume(InputFileChangeEventArgs e)
+    private async Task HandleValidSubmit()
     {
-        var selectedFile = e.File;
-        var message = string.Empty;
-
-        if (selectedFile != null)
-        {
-            var content = new MultipartFormDataContent();
-            var fileStream = selectedFile.OpenReadStream(selectedFile.Size);
-            var streamContent = new StreamContent(fileStream);
-            content.Add(streamContent, "file", selectedFile.Name);
-
-            var response = await Http.PostAsync("/api/uploadResume", content);
-            if (response.IsSuccessStatusCode)
-            {
-                message = "File uploaded successfully!";
-            }
-            else
-            {
-                message = "File upload failed.";
-            }
-            var responseResumeJson = await response.Content.ReadAsStringAsync();
-            var responseResume = JsonSerializer.Deserialize<Resume>(responseResumeJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            userProfile.EmployeeProfile.ResumeUrl = responseResume.ResumeUrl;
-            extractedSkills = responseResume.extractedSkills;
-            showModal = extractedSkills.Count > 0;
-        }
+        await JS.InvokeVoidAsync("alert", "Profile submitted successfully!");
     }
 
-
-    private void RemoveSkill(string skill)
+    private async Task GenerateSummary()
     {
-        extractedSkills.Remove(skill);
+        var summary = $"Patient Profile Summary\n\nName: {patientProfile.FullName}\nDOB: {patientProfile.DateOfBirth:d}\nAddress: {patientProfile.Address}\nPhone: {patientProfile.PhoneNumber}\nEmergency Contact: {patientProfile.EmergencyContact}\n\nProvider: {patientProfile.ProviderName}, {patientProfile.ProviderEmail}, {patientProfile.ProviderPhone}\nInsurance: {patientProfile.InsuranceProvider}, Policy #: {patientProfile.PolicyNumber}\n\nMedical History: {patientProfile.MedicalHistory}\nFamily History: {patientProfile.FamilyMedicalHistory}\nMedications: {patientProfile.CurrentMedications}\nReason for Visit: {patientProfile.ReasonForVisit}\nLifestyle: {patientProfile.Lifestyle}\n\nBP: {patientProfile.BloodPressure}\nHR: {patientProfile.HeartRate} bpm\n\nConsents:\n- Treatment: {(patientProfile.ConsentTreatment ? "Yes" : "No")}\n- Privacy: {(patientProfile.ConsentPrivacy ? "Yes" : "No")}\n- Billing: {(patientProfile.ConsentBilling ? "Yes" : "No")}";
+
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", summary);
+        await JS.InvokeVoidAsync("alert", "Summary copied to clipboard. Paste in Word or save as PDF.");
     }
-    private string extSkillsText = "";
-    private void ApproveSkills()
+
+    public class PatientProfileModel
     {
-        // Logic to save skills
-        // extSkillsText = string.Join(", ", userProfile.EmployeeProfile.Skills.Select(x => x.Name));
-        extSkillsText = string.Join(", ", extractedSkills);
+        [Required] public string FullName { get; set; }
+        [Required] public DateTime DateOfBirth { get; set; }
+        public string Address { get; set; }
+        public string PhoneNumber { get; set; }
+        public string EmergencyContact { get; set; }
 
-        showModal = false;
+        public string ProviderName { get; set; }
+        public string ProviderEmail { get; set; }
+        public string ProviderPhone { get; set; }
+
+        public string InsuranceProvider { get; set; }
+        public string PolicyNumber { get; set; }
+
+        public string MedicalHistory { get; set; }
+        public string FamilyMedicalHistory { get; set; }
+        public string CurrentMedications { get; set; }
+        public string ReasonForVisit { get; set; }
+        public string Lifestyle { get; set; }
+
+        public string BloodPressure { get; set; }
+        public int? HeartRate { get; set; }
+
+        public bool ConsentTreatment { get; set; }
+        public bool ConsentPrivacy { get; set; }
+        public bool ConsentBilling { get; set; }
     }
-
-    private void OpenPopup()
-    {
-        // Simulate skill extraction from the resume (Replace this with actual API call)
-      
-
-        //extractedSkills = new List<string> { "C#", ".NET", "Blazor", "Azure" };
-        showModal = true;
-    }
-
-    private void CloseModal()
-    {
-        showModal = false;
-    }
-
-    
-    private UserProfile userProfile = new UserProfile() { EmployeeProfile= new EmployeeProfile(), EmployerProfile= new EmployerProfile()};
-
-    private string certifications { get => string.Join(", ", userProfile.EmployeeProfile.Certifications); set => userProfile.EmployeeProfile.Certifications = value.Split(',').Select(c => c.Trim()).ToList(); }
-
-    private async Task SelectRole(string role)
-    {
-        UserRole = role;
-        userProfile.Role = role;
-    }
-
-    private void ResetRole()
-    {
-        UserRole = null;
-        userProfile = new UserProfile();
-    }
-
-    private async Task SubmitProfile()
-    {
-        // var accessToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "access_token");
-        userProfile.Email = await SecureStorage.GetUserIdAsync();
-        var response = await Http.PostAsJsonAsync("/api/userprofiles/CreateProfile", userProfile);
-        if (response.IsSuccessStatusCode)
-        {
-            var userProfileJson = await response.Content.ReadAsStringAsync();
-            userProfile = await SecureStorage.GetUserProfileAsync(userProfileJson);
-            
-            SecureStorage.SetItemAsync("sb_user_profile", userProfileJson);
-            SecureStorage.SetItemAsync("user_role", userProfile.Role);
-          
-            if (UserRole == "Employee")
-            {
-                Navigation.NavigateTo("/employee-dashboard", forceLoad: true);
-            }
-            else if (UserRole == "Employer")
-            {
-                Navigation.NavigateTo("/employer-dashboard", forceLoad: true);
-            }
-            else
-            {
-                Navigation.NavigateTo("/", forceLoad: true);
-            }
-        }
-    }
-
-    private void AddSkill()
-    {
-        userProfile.EmployeeProfile.Skills.Add(new Skill());
-    }
-
-    private void RemoveSkill(Skill skill)
-    {
-        userProfile.EmployeeProfile.Skills.Remove(skill);
-    }
-
-    private void AddLocation()
-    {
-        userProfile.EmployerProfile.CompanyLocations.Add(new CompanyLocation());
-    }
-
-    private void RemoveLocation(CompanyLocation companyLocation)
-    {
-        userProfile.EmployerProfile.CompanyLocations.Remove(companyLocation);
-    }
-
-    /// <summary>
-    /// if user approves the skills then consent will be true else we will set to false
-    /// </summary>
-    /// <param name="extractedSkillsFromPopup"></param>
-    /// <param name="userConsent"></param>
-    private void SetExtractedSkills(List<string> extractedSkillsFromPopup, bool userConsent)
-    { 
-		userProfile.EmployeeProfile.Skills = extractedSkillsFromPopup.Select(skill => new Skill { Name = skill }).ToList();
-
-        // close the popup
-    }
-
-    public class Resume
-    {
-		public string ResumeUrl { get; set; } = string.Empty;
-        public List<string> extractedSkills { get; set; }=  new List<string>(); 
-    }   
-
 }
