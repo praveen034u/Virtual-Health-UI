@@ -1,4 +1,4 @@
-﻿namespace SkillBridge.UI
+﻿namespace VirtualHealth.UI
 {
     public class Helper
     {

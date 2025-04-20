@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 
-namespace SkillBridge.UI
+namespace VirtualHealth.UI
 {
     public class Job
     {

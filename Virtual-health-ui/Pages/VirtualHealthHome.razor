@@ -5,14 +5,14 @@
 @inject SecureStorageService SecureStorage
 @inject HttpClient HttpClient
 
-<PageTitle>SkillBridgeHome</PageTitle>
+<PageTitle>VirtualHealthHome</PageTitle>
 
 <div class="container-fluid">
     <!-- Hero Section -->
     <section class="text-center bg-dark text-white py-5">
         <div class="container">
-            <h1 class="display-4 fw-bold">Welcome to SkillBridge</h1>
-            <p class="lead">Connecting underprivileged talents with opportunities</p>
+            <h1 class="display-4 fw-bold">Welcome to Your Health Assistant</h1>
+            <p class="lead">Track your vitals and stay healthy with real-time insights.</p>
             <button @onclick="ShowLoginWidget" class="btn btn-light btn-lg mt-3">Get Started</button>
         </div>
     </section>
@@ -25,29 +25,29 @@
     <!-- Features Section -->
     <section class="py-5">
         <div class="container">
-            <h2 class="text-center mb-4 text-dark">Why Choose SkillBridge?</h2>
+            <h2 class="text-center mb-4 text-dark">Why Choose VirtualHealth?</h2>
             <div class="row">
                 <div class="col-md-4">
                     <div class="card text-center shadow-sm border-0">
                         <div class="card-body">
-                            <h3 class="card-title text-primary">Skill Matching</h3>
-                            <p class="card-text">AI-powered matchmaking connects you with relevant job opportunities.</p>
+                            <h3 class="card-title text-primary">360° Health Insights</h3>
+                            <p class="card-text">Get a unified view of your health with data from wearables, hospitals, and pharmacies.</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card text-center shadow-sm border-0">
                         <div class="card-body">
-                            <h3 class="card-title text-success">Mentorship</h3>
-                            <p class="card-text">Get guidance from industry experts to build a successful career.</p>
+                            <h3 class="card-title text-success">AI Health Companion</h3>
+                            <p class="card-text">Personalized recommendations, early risk alerts, and prescription assistance powered by Gen AI.</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card text-center shadow-sm border-0">
                         <div class="card-body">
-                            <h3 class="card-title text-warning">Remote Learning</h3>
-                            <p class="card-text">Access skill-enhancing courses and resources tailored to your needs.</p>
+                            <h3 class="card-title text-warning">Smart Monitoring & Reminders</h3>
+                            <p class="card-text">Real-time vitals monitoring with smart medication reminders and emergency alerts.</p>
                         </div>
                     </div>
                 </div>
@@ -57,8 +57,11 @@
 
     <!-- Call-to-Action Section -->
     <section class="text-center bg-secondary text-white py-5">
-        <h2 class="fw-bold">Start Your Journey Today!</h2>
-        @*  <button @onclick="ShowLoginWidget" class="btn btn-dark btn-lg mt-3">Sign Up Now</button> *@
+        <h2 class="fw-bold">Take Control of Your Health Today!</h2>
+        <p class="lead mt-2">Join VirtualHealth and get real-time insights, AI guidance, and personalized care at your fingertips.</p>
+        <button @onclick="ShowLoginWidget" class="btn btn-light btn-lg mt-3 text-dark fw-semibold">
+            Get Started
+        </button>
     </section>
 </div>
 
@@ -100,6 +103,7 @@
 
         string userId = await _secureStorage.GetSecureUserIdAsync(userSecureProfileJson);
         await _secureStorage.SetItemAsync("user_id", userId);
+       
         if (string.IsNullOrEmpty(userId))
         {
             Console.WriteLine("User ID not found, redirecting to Create Profile.");
@@ -110,42 +114,42 @@
         // Check profile from API
         //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        var response = await _httpClient.GetAsync($"api/userprofiles/{userId}");
-        if (!response.IsSuccessStatusCode)
-        {
-            Console.WriteLine("Profile not found, redirecting to Create Profile.");
-            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
-            return;
-        }
+        // var response = await _httpClient.GetAsync($"api/userprofiles/{userId}");
+        // if (!response.IsSuccessStatusCode)
+        // {
+        //     Console.WriteLine("Profile not found, redirecting to Create Profile.");
+        //     _navigationManager.NavigateTo("/create-profile", forceLoad: true);
+        //     return;
+        // }
 
-        var profileJsonData = await response.Content.ReadAsStringAsync();
-        var profile = await _secureStorage.GetUserProfileAsync(profileJsonData);
+        // var profileJsonData = await response.Content.ReadAsStringAsync();
+        // var profile = await _secureStorage.GetUserProfileAsync(profileJsonData);
 
-        if (profile == null)
-        {
-            Console.WriteLine("Invalid profile response, redirecting to Create Profile.");
-            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
-            return;
-        }
-        _secureStorage.SetItemAsync("sb_user_profile", profileJsonData);
-        _secureStorage.SetItemAsync("user_role", profile.Role);
+        // if (profile == null)
+        // {
+        //     Console.WriteLine("Invalid profile response, redirecting to Create Profile.");
+        //     _navigationManager.NavigateTo("/create-profile", forceLoad: true);
+        //     return;
+        // }
+        // _secureStorage.SetItemAsync("sb_user_profile", profileJsonData);
+        // _secureStorage.SetItemAsync("user_role", profile.Role);
 
-        // Redirect based on role
-        if (profile.Role == "Employee")
-        {
-            Console.WriteLine("Redirecting to Employee Dashboard.");
-            _navigationManager.NavigateTo("/employee-dashboard", forceLoad: true);
-        }
-        else if (profile.Role == "Employer")
-        {
-            Console.WriteLine("Redirecting to Employer Dashboard.");
-            _navigationManager.NavigateTo("/employer-dashboard", forceLoad: true);
-        }
-        else
-        {
+        // // Redirect based on role
+        // if (profile.Role == "Employee")
+        // {
+        //     Console.WriteLine("Redirecting to Employee Dashboard.");
+        //     _navigationManager.NavigateTo("/employee-dashboard", forceLoad: true);
+        // }
+        // else if (profile.Role == "Employer")
+        // {
+        //     Console.WriteLine("Redirecting to Employer Dashboard.");
+        //     _navigationManager.NavigateTo("/employer-dashboard", forceLoad: true);
+        // }
+        // else
+        // {
             Console.WriteLine("Unknown role, redirecting to Create Profile.");
             _navigationManager.NavigateTo("/create-profile", forceLoad: true);
-        }
+       // }
            
     }
 
