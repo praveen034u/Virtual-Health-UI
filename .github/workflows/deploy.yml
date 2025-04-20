@@ -18,10 +18,10 @@ jobs:
           dotnet-version: '9.0.x'  # Installs latest .NET 9 SDK so we can build net9.0 projects
 
       - name: Restore .NET dependencies
-        run: dotnet restore Virtual-Health-UI/VirtualHealth.UI.csproj
+        run: dotnet restore Virtual-health-ui/VirtualHealth.UI.csproj
 
       - name: Publish Blazor WASM app
-        run: dotnet publish Virtual-Health-UI/VirtualHealth.UI.csproj --configuration Release --output publish
+        run: dotnet publish Virtual-health-ui/VirtualHealth.UI.csproj --configuration Release --output publish
 
       # Sync the published files to the S3 bucket
       - name: Deploy to S3 (Sync)
