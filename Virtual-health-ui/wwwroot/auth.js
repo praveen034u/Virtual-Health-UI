@@ -1,5 +1,5 @@
 ﻿window.showAuth0Login = () => {
-    var lock = new Auth0Lock('EOMCZTuZXxjFh6iWbQRxZANCslzTncYl', 'dev-jbrriuc5vyjmiwtx.us.auth0.com', {
+    var lock = new Auth0Lock('V9Una2guriD6USXmVHCn4LVRZX9Ao479', 'dev-jbrriuc5vyjmiwtx.us.auth0.com', {
         auth: {
             redirect: false,
             responseType: 'token id_token',
