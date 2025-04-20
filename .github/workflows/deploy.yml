@@ -2,7 +2,7 @@ name: Build and Deploy Blazor WASM to S3
 
 on:
   push:
-    branches: [ master ]  # Trigger on pushes to main (adjust branch as needed)
+    branches: [ master ]  # Trigger on pushes to main (adjust the branch as needed)
 
 jobs:
   deploy:
