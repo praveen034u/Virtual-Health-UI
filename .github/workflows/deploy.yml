@@ -3,7 +3,7 @@ name: Deploy Blazor WASM to S3
 on:
   push:
     branches:
-      - main  # or 'master'
+      - master
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
     - name: Set up .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.x'
+        dotnet-version: '8.0'
 
     - name: Restore dependencies
       run: dotnet restore
