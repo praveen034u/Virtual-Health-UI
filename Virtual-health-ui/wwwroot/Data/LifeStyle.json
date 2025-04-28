@@ -1,0 +1,14 @@
+[
+  {
+    "behaviorCode": "10157-6",
+    "behaviorName": "Exercise hours per week",
+    "inputType": "number",
+    "system": "LOINC"
+  },
+  {
+    "behaviorCode": "75186-7",
+    "behaviorName": "Dietary habits",
+    "inputType": "dropdown",
+    "system": "LOINC"
+  }
+]

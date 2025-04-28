@@ -1,0 +1,47 @@
+[
+  {
+    "code": "8480-6",
+    "display": "Systolic blood pressure",
+    "unit": "mmHg"
+  },
+  {
+    "code": "8462-4",
+    "display": "Diastolic blood pressure",
+    "unit": "mmHg"
+  },
+  {
+    "code": "8310-5",
+    "display": "Body temperature",
+    "unit": "°C"
+  },
+  {
+    "code": "8302-2",
+    "display": "Body height",
+    "unit": "cm"
+  },
+  {
+    "code": "29463-7",
+    "display": "Body weight",
+    "unit": "kg"
+  } ,
+  {
+    "code": "39156-5",
+    "display": "Body Mass Index (BMI)",
+    "unit": "kg/m2"
+  },
+  {
+    "code": "8867-4",
+    "display": "Heart rate",
+    "unit": "beats/min"
+  },
+  {
+    "code": "9279-1",
+    "display": "Respiratory rate",
+    "unit": "breaths/min"
+  },
+  {
+    "code": "2708-6",
+    "display": "Oxygen saturation in Arterial blood",
+    "unit": "%"
+  }
+]

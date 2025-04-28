@@ -1,0 +1,27 @@
+[
+  {
+    "imagingTypeCode": "36626-6",
+    "imagingTypeName": "CT Chest",
+    "system": "LOINC"
+  },
+  {
+    "imagingTypeCode": "24531-5",
+    "imagingTypeName": "MRI Brain",
+    "system": "LOINC"
+  },
+  {
+    "imagingTypeCode": "24727-0",
+    "imagingTypeName": "X-ray Chest PA and Lateral",
+    "system": "LOINC"
+  },
+  {
+    "imagingTypeCode": "36346-3",
+    "imagingTypeName": "Ultrasound Abdomen",
+    "system": "LOINC"
+  },
+  {
+    "imagingTypeCode": "26238-0",
+    "imagingTypeName": "Mammogram both breasts",
+    "system": "LOINC"
+  }
+]

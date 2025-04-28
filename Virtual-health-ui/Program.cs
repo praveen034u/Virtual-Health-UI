@@ -8,7 +8,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<SecureStorageService>();
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7098") });
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7236") });
 
 builder.Services.AddOidcAuthentication(options =>
 {

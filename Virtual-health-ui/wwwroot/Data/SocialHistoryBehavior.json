@@ -1,0 +1,20 @@
+[
+  {
+    "behaviorCode": "72166-2",
+    "behaviorName": "Tobacco smoking status",
+    "inputType": "dropdown",
+    "system": "LOINC"
+  },
+  {
+    "behaviorCode": "11341-5",
+    "behaviorName": "History of Alcohol use",
+    "inputType": "dropdown",
+    "system": "LOINC"
+  },
+  {
+    "behaviorCode": "8661-1",
+    "behaviorName": "Occupation",
+    "inputType": "text",
+    "system": "LOINC"
+  }
+]

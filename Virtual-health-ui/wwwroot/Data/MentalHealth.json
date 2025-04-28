@@ -1,0 +1,23 @@
+[
+  {
+    "code": "44249-1",
+    "display": "Depression screening report",
+    "system": "LOINC",
+    "unit": "score",
+    "normalRange": "0-27"
+  },
+  {
+    "code": "44250-9",
+    "display": "PHQ-9 assessment (Depression severity)",
+    "system": "LOINC",
+    "unit": "score",
+    "normalRange": "0-27"
+  },
+  {
+    "code": "72127-4",
+    "display": "Generalized Anxiety Disorder 7-item (GAD-7) total score",
+    "system": "LOINC",
+    "unit": "score",
+    "normalRange": "0-21"
+  }
+]

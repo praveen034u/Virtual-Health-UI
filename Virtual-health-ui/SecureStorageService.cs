@@ -37,7 +37,6 @@ public class SecureStorageService
         return userId;
     }
 
-
     public async Task<string> GetUserIdAsync()
     {
         return await _jsRuntime.InvokeAsync<string>("secureStorage.getItem", "user_id");
