@@ -6,18 +6,9 @@
 
     @if (!Navigation.Uri.Contains("VirtualHealthhome") && !Navigation.Uri.EndsWith("/") && !Navigation.Uri.EndsWith("/#"))
         {
-        if (userRole == "Employer")
-        {
-           <div class="sidebar">
-            <NavMenuEmployer />
-           </div>
-        }
-        else if (userRole == "Employee")
-            {
-                 <div class="sidebar">
-                  <NavMenuEmployee />
-                 </div>
-            }
+              @*    <div class="sidebar">
+                  <NavMenu />
+                 </div> *@
         }
     
 
