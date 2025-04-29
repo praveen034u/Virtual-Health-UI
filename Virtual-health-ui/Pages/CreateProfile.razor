@@ -2,7 +2,9 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Text.Json
 @using VirtualHealth.UI.Models
+@using VirtualHealth.UI.Services
 @inject SecureStorageService SecureStorage
+@inject MedPlumAPIService MedplumService
 @inject IJSRuntime JS
 @inject HttpClient Http
 
@@ -44,46 +46,63 @@
 							<option value="unknown">Unknown</option>
 						</InputSelect>
 					</div>
-					<div class="form-group">
-						<label>AddressLine1</label>
-						<InputText @bind-Value="patientProfile.PatientAddress.AddressLine1" class="form-control" placeholder="123 Main St." />
-					</div>
-					<div class="form-group">
-						<label>Street</label>
-						<InputText @bind-Value="patientProfile.PatientAddress.Street" class="form-control" placeholder="" />
-					</div>
-					<div class="form-group">
-						<label>City</label>
-						<InputText @bind-Value="patientProfile.PatientAddress.City" class="form-control" placeholder="Springfield" />
-					</div>
-					<div class="form-group">
-						<label>State</label>
-						<InputText @bind-Value="patientProfile.PatientAddress.State" class="form-control" placeholder="New York" />
-					</div>
-					<div class="form-group">
-						<label>ZipCode</label>
-						<InputText @bind-Value="patientProfile.PatientAddress.ZipCode" class="form-control" placeholder="47290" />
-					</div>
-					<div class="form-group">
-						<label>Address</label>
-						<InputText @bind-Value="patientProfile.PatientAddress.Country" class="form-control" placeholder="United States" />
-					</div>
+
 					<div class="form-group">
 						<label>Phone Number</label>
-						<InputText @bind-Value="patientProfile.PhoneNumber" class="form-control" />
+						<InputText @bind-Value="patientProfile.PhoneNumber" class="form-control" placeholder="(123) 456-7890" />
 					</div>
-					<div class="form-group">
-						<label>Emergency Contact Info</label>
-						<InputText @bind-Value="patientProfile.EmergencyContactFirstName" class="form-control" placeholder="Jane" />
-					</div>
-					<div class="form-group">
-						<label>Emergency Contact Info</label>
-						<InputText @bind-Value="patientProfile.EmergencyContactLastName" class="form-control" placeholder="Doe" />
-					</div>
-					<div class="form-group">
-						<label>Emergency Contact Info</label>
-						<InputText @bind-Value="patientProfile.EmergencyContactPhone" class="form-control" placeholder="(123) 456-7890" />
-					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<!-- Address -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingAddress">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAddress">
+					2. Patient Address
+				</button>
+			</h2>
+			<div id="collapseAddress" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					<label>AddressLine1</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.AddressLine1" class="form-control" placeholder="123 Main St." />
+
+					<label>Street</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.Street" class="form-control" placeholder="" />
+
+					<label>City</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.City" class="form-control" placeholder="Springfield" />
+
+					<label>State</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.State" class="form-control" placeholder="New York" />
+
+					<label>Zip Code</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.ZipCode" class="form-control" placeholder="47290" />
+
+					<label>Country</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.Country" class="form-control" placeholder="United States" />
+				</div>
+			</div>
+		</div>
+
+		<!-- Emergency Contact -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingEmergency">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEmergency">
+					3. Emergency Contact
+				</button>
+			</h2>
+			<div id="collapseEmergency" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					<label>First Name</label>
+					<InputText @bind-Value="patientProfile.EmergencyContactFirstName" class="form-control" placeholder="Jane" />
+
+					<label>Last Name</label>
+					<InputText @bind-Value="patientProfile.EmergencyContactLastName" class="form-control" placeholder="Doe" />
+
+					<label>Phone Number</label>
+					<InputText @bind-Value="patientProfile.EmergencyContactPhone" class="form-control" placeholder="(123) 456-7890" />
 				</div>
 			</div>
 		</div>
@@ -92,14 +111,29 @@
 		<div class="accordion-item">
 			<h2 class="accordion-header" id="headingProvider">
 				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProvider">
-					2. Primary Care Provider
+					4. Primary Care Provider
 				</button>
 			</h2>
 			<div id="collapseProvider" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
 				<div class="accordion-body">
-					<InputText @bind-Value="patientProfile.Pcp.FirstName" class="form-control mb-2" placeholder="First Name" />
-					<InputText @bind-Value="patientProfile.Pcp.LastName" class="form-control mb-2" placeholder="Last Name" />
-					<InputText @bind-Value="patientProfile.Pcp.Email" class="form-control mb-2" placeholder="Email" />
+					<label>First Name</label>
+					<InputText @bind-Value="patientProfile.Pcp.FirstName" class="form-control" />
+
+					<label>Last Name</label>
+					<InputText @bind-Value="patientProfile.Pcp.LastName" class="form-control" />
+
+					<label>Gender</label>
+					<InputSelect @bind-Value="patientProfile.Pcp.Gender" class="form-control">
+						<option value="">-- Select Gender --</option>
+						<option value="male">Male</option>
+						<option value="female">Female</option>
+						<option value="other">Other</option>
+						<option value="unknown">Unknown</option>
+					</InputSelect>
+
+					<label>Email</label>
+					<InputText @bind-Value="patientProfile.Pcp.Email" class="form-control" />
+
 				</div>
 			</div>
 		</div>
@@ -108,7 +142,7 @@
 		<div class="accordion-item">
 			<h2 class="accordion-header" id="headingInsurance">
 				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInsurance">
-					3. Insurance Information
+					5. Insurance Information
 				</button>
 			</h2>
 			<div id="collapseInsurance" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
@@ -119,60 +153,11 @@
 			</div>
 		</div>
 
-		<!-- Medical Details -->
-		<div class="accordion-item">
-			<h2 class="accordion-header" id="headingMedical">
-				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMedical">
-					4–8. Medical, Family History, Medications, Visit Reason, Lifestyle
-				</button>
-			</h2>
-			<div id="collapseMedical" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
-				<div class="accordion-body">
-					<label>4. Medical History</label>
-					<InputTextArea @bind-Value="patientProfile.MedicalHistory" class="form-control mb-3" rows="3" placeholder="Past illnesses, allergies, surgeries..." />
-
-					<label>5. Family Medical History</label>
-					<InputTextArea @bind-Value="patientProfile.FamilyMedicalHistory" class="form-control mb-3" rows="2" placeholder="e.g., Diabetes, Heart Disease" />
-
-					<label>6. Current Medications</label>
-					<InputTextArea @bind-Value="patientProfile.CurrentMedications" class="form-control mb-3" rows="2" placeholder="e.g., Aspirin 100mg daily, Vitamin D" />
-
-					<label>7. Reason for Visit</label>
-					<InputTextArea @bind-Value="patientProfile.ReasonForVisit" class="form-control mb-3" rows="2" placeholder="e.g., chest pain, regular checkup" />
-				</div>
-			</div>
-		</div>
-
-		<!-- Consent -->
-		<div class="accordion-item">
-			<h2 class="accordion-header" id="headingConsent">
-				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConsent">
-					9. Consent Forms
-				</button>
-			</h2>
-			<div id="collapseConsent" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
-				<div class="accordion-body">
-					<div class="form-check">
-						<InputCheckbox @bind-Value="patientProfile.ConsentTreatment" class="form-check-input" />
-						<label class="form-check-label">I consent to treatment</label>
-					</div>
-					<div class="form-check">
-						<InputCheckbox @bind-Value="patientProfile.ConsentPrivacy" class="form-check-input" />
-						<label class="form-check-label">I agree to the privacy policy</label>
-					</div>
-					<div class="form-check">
-						<InputCheckbox @bind-Value="patientProfile.ConsentBilling" class="form-check-input" />
-						<label class="form-check-label">I agree to the billing terms</label>
-					</div>
-				</div>
-			</div>
-		</div>
-
 		<!-- Vitals -->
 		<div class="accordion-item">
 			<h2 class="accordion-header" id="headingVitals">
 				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVitals">
-					10. Vitals: Blood Pressure, Heart Rate etc.
+					6. Vitals: Height, Weight
 				</button>
 			</h2>
 			<div id="collapseVitals" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
@@ -192,7 +177,7 @@
 		<div class="accordion-item">
 			<h2 class="accordion-header" id="headingConditions">
 				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConditions">
-					11. Conditions: Hypertension, Diabetes, Asthma etc.
+					7. Past Conditions: Hypertension, Diabetes, Asthma etc.
 				</button>
 			</h2>
 			<div id="collapseConditions" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
@@ -249,7 +234,7 @@
 		</div> *@
 
 		<!-- MentalHealth -->
-		<div class="accordion-item">
+		@* <div class="accordion-item">
 			<h2 class="accordion-header" id="headingMentalHealth">
 				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMentalHealth">
 					14. Mental Health Assessment: Depression screening report, Generalized Anxiety Disorder etc.
@@ -266,13 +251,13 @@
 					}
 				</div>
 			</div>
-		</div>
+		</div> *@
 
 		<!-- SocialHistory -->
 		<div class="accordion-item">
 			<h2 class="accordion-header" id="headingSocialHistory">
 				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSocialHistory">
-					15. Social History: Tobacco smoking status, History of Alcohol use etc.
+					8. Social History: Tobacco smoking status, History of Alcohol use etc.
 				</button>
 			</h2>
 			<div id="collapseSocialHistory" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
@@ -309,13 +294,13 @@
 					}
 				</div>
 			</div>
-		</div> 
+		</div>
 
 		<!-- LifeStyles -->
 		<div class="accordion-item">
 			<h2 class="accordion-header" id="headingLifeStyles">
 				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLifeStyles">
-					16. LifeStyles: Dietary habits, Exercise hours per week etc.
+					9. LifeStyles: Dietary habits, Exercise hours per week etc.
 				</button>
 			</h2>
 			<div id="collapseLifeStyles" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
@@ -323,7 +308,7 @@
 					@foreach (var lifeStyle in patientProfile.LifestyleHistories)
 					{
 						<div class="form-group">
-							<label>@lifeStyle.BehaviorName</label>
+							<label>@lifeStyle.LifestyleName</label>
 
 							@if (lifeStyle.InputType == "number")
 							{
@@ -335,7 +320,7 @@
 							}
 							else if (lifeStyle.InputType == "dropdown")
 							{
-								var socialStatuses = socialHistoryStatus.Where(ss => ss.BehaviorCode == lifeStyle.BehaviorCode);
+								var socialStatuses = socialHistoryStatus.Where(ss => ss.BehaviorCode == lifeStyle.LifestyleCode);
 
 								@if (socialStatuses?.Any() == true)
 								{
@@ -354,6 +339,31 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Consent -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingConsent">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConsent">
+					10. Consent Forms
+				</button>
+			</h2>
+			<div id="collapseConsent" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					<div class="form-check">
+						<InputCheckbox @bind-Value="patientProfile.ConsentTreatment" class="form-check-input" />
+						<label class="form-check-label">I consent to treatment</label>
+					</div>
+					<div class="form-check">
+						<InputCheckbox @bind-Value="patientProfile.ConsentPrivacy" class="form-check-input" />
+						<label class="form-check-label">I agree to the privacy policy</label>
+					</div>
+					<div class="form-check">
+						<InputCheckbox @bind-Value="patientProfile.ConsentBilling" class="form-check-input" />
+						<label class="form-check-label">I agree to the billing terms</label>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<div class="d-flex flex-column flex-md-row mt-4">
@@ -366,18 +376,140 @@
 	private PatientProfile patientProfile = new();
 	private List<SocialHistoryStatusInput> socialHistoryStatus = new();
 	private string selectedStatusCode = string.Empty;
+	private string email = string.Empty;
+	//private HttpClient Http = new HttpClient { BaseAddress = new Uri("https://localhost:7236") };
 
 	protected override async Task OnInitializedAsync()
 	{
-		patientProfile.Email = await SecureStorage.GetUserIdAsync();
+		email = await SecureStorage.GetUserIdAsync();
+
+		patientProfile.Email = email;
 		patientProfile.VitalSigns = await LoadVitals();
 		patientProfile.PastConditions = await LoadConditions();
 		//patientProfile.LabResults = await LoadLabResult();
 		//patientProfile.ImagingResults = await LoadImagingResult();
-		patientProfile.MentalHealthAssessments = await LoadMentalHealthAssessments();
+		//patientProfile.MentalHealthAssessments = await LoadMentalHealthAssessments();
 		patientProfile.SocialHistories = await LoadSocialHistory();
 		patientProfile.LifestyleHistories = await LoadLifeStyle();
 		socialHistoryStatus = await LoadSocialHistoryStatus();
+
+		var profile = await MedplumService.GetPatientFullProfileAsync(email);
+		if (string.IsNullOrEmpty(profile.PatientId))
+		{
+			patientProfile.PatientAddress.Country = "USA";
+		}
+		else
+		{
+			patientProfile.PatientId = profile.PatientId;
+			patientProfile.PatientName = profile.PatientName;
+			patientProfile.FirstName = profile.FirstName;
+			patientProfile.LastName = profile.LastName;
+			patientProfile.Gender = profile.Gender;
+			patientProfile.BirthDate = profile.BirthDate;
+			patientProfile.PhoneNumber = profile.PhoneNumber;
+
+			patientProfile.PatientAddress.AddressLine1 = profile.PatientAddress?.AddressLine1 ?? string.Empty;
+			patientProfile.PatientAddress.Street = profile.PatientAddress?.Street ?? string.Empty;
+			patientProfile.PatientAddress.City = profile.PatientAddress?.City ?? string.Empty;
+			patientProfile.PatientAddress.State = profile.PatientAddress?.State ?? string.Empty;
+			patientProfile.PatientAddress.ZipCode = profile.PatientAddress?.ZipCode ?? string.Empty;
+			patientProfile.PatientAddress.Country = profile.PatientAddress?.Country ?? string.Empty;
+
+			patientProfile.EmergencyContactFirstName = profile.EmergencyContactFirstName ?? string.Empty;
+			patientProfile.EmergencyContactLastName = profile.EmergencyContactLastName ?? string.Empty;
+			patientProfile.EmergencyContactPhone = profile.EmergencyContactPhone ?? string.Empty;
+			patientProfile.InsuranceProvider = profile.InsuranceProvider ?? string.Empty;
+			patientProfile.PolicyNumber = profile.PolicyNumber ?? string.Empty;
+
+			patientProfile.Pcp.FirstName = profile.Pcp?.FirstName ?? string.Empty;
+			patientProfile.Pcp.LastName = profile.Pcp?.LastName ?? string.Empty;
+			patientProfile.Pcp.Email = profile.Pcp?.Email ?? string.Empty;
+
+			patientProfile.ConsentTreatment = profile.ConsentTreatment;
+			patientProfile.ConsentPrivacy = profile.ConsentPrivacy;
+			patientProfile.ConsentBilling = profile.ConsentBilling;
+
+			// Update matching PastConditions from Saved data
+			foreach (var updated in profile.PastConditions)
+			{
+				var existing = patientProfile.PastConditions.FirstOrDefault(c => c.Code == updated.Code);
+				if (existing != null)
+				{
+					existing.IsSelected = true;
+				}
+			}
+
+			// Update matching Vitals from Saved data
+			foreach (var updated in profile.VitalSigns)
+			{
+				var existing = patientProfile.VitalSigns.FirstOrDefault(v => v.Code == updated.Code);
+				if (existing != null)
+				{
+					existing.Value = updated.Value;
+					existing.Unit = updated.Unit;
+					existing.Timestamp = updated.Timestamp;
+				}
+			}
+
+			// Update matching Social Histories from Saved data
+			foreach (var updated in profile.SocialHistories)
+			{
+				var existing = patientProfile.SocialHistories.FirstOrDefault(s =>
+					s.BehaviorCode == updated.BehaviorCode);
+
+				if (existing != null)
+				{
+					if (existing.InputType == "number")
+					{
+						existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
+						existing.StatusValue = Convert.ToInt32(updated.StatusDisplay ?? string.Empty);
+					}
+					else
+					{
+						existing.StatusCode = updated.StatusCode ?? string.Empty;
+						existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
+					}
+
+				}
+			}
+
+			// Update matching Lifestyle Histories from Saved data
+			foreach (var updated in profile.LifestyleHistories)
+			{
+				var existing = patientProfile.LifestyleHistories.FirstOrDefault(s =>
+					s.LifestyleCode == updated.LifestyleCode);
+
+				if (existing != null)
+				{
+					if (string.IsNullOrEmpty(existing.Detail))
+					{
+						if (existing.InputType == "number")
+						{
+							existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
+							existing.StatusValue = Convert.ToInt32(updated.StatusDisplay ?? string.Empty);
+						}
+						else
+						{
+							existing.StatusCode = updated.StatusCode ?? string.Empty;
+							existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
+						}
+					}
+					else
+					{
+						if (existing.InputType == "number")
+						{
+							existing.StatusDisplay = updated.Detail;
+							existing.StatusValue = Convert.ToInt32(updated.Detail);
+						}
+						else
+						{
+							existing.StatusCode = updated.Detail?.ToLower();
+							existing.StatusDisplay = updated.Detail;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	private async Task HandleValidSubmit()
@@ -394,20 +526,33 @@
 			else
 				history.StatusCode = string.Empty;
 		}
+		patientProfile.SocialHistories
+			.Where(sh => sh.StatusValue != null).ToList()
+			.ForEach(sh => sh.StatusDisplay = sh.StatusValue?.ToString());
 
 		foreach (var lifeStyle in patientProfile.LifestyleHistories.Where(sh => !string.IsNullOrEmpty(sh.StatusCode)))
 		{
 			var match = socialHistoryStatus
-				.FirstOrDefault(s => s.BehaviorCode == lifeStyle.BehaviorCode && s.StatusCode == lifeStyle.StatusCode);
+				.FirstOrDefault(s => s.BehaviorCode == lifeStyle.LifestyleCode && s.StatusCode == lifeStyle.StatusCode);
 
 			if (match != null)
+			{
 				lifeStyle.StatusDisplay = match.StatusDisplay;
+				lifeStyle.Detail = match.StatusDisplay;
+			}
 			else
 				lifeStyle.StatusCode = string.Empty;
 		}
+		patientProfile.LifestyleHistories
+			.Where(sh => sh.StatusValue != null).ToList()
+			.ForEach(sh =>
+				{
+					sh.StatusDisplay = sh.StatusValue?.ToString();
+					sh.Detail = sh.StatusValue?.ToString();
+				});
 
-		var abc = patientProfile;
-		await JS.InvokeVoidAsync("alert", "Profile submitted successfully!");
+		var patientId = await MedplumService.CreatePatientFullProfileAsync(patientProfile);
+		await JS.InvokeVoidAsync("alert", patientId); //"Profile submitted successfully!"
 	}
 
 	private async Task GenerateSummary()
@@ -593,4 +738,5 @@
 		}
 		return socialHistory;
 	}
+
 }

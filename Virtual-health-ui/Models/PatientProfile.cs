@@ -14,7 +14,6 @@ public class PatientProfile
     public string Gender { get; set; } = default!;
     [Required]
     public DateTime BirthDate { get; set; } = default!;
-    public string Address { get; set; } = string.Empty;
 
     public string Email { get; set; } = string.Empty;
 
@@ -30,11 +29,7 @@ public class PatientProfile
     
     public string InsuranceProvider { get; set; } = string.Empty;
     public string PolicyNumber { get; set; } = string.Empty;
-    public string MedicalHistory { get; set; } = string.Empty;
-    public string FamilyMedicalHistory { get; set; }
-    public string CurrentMedications { get; set; }
-    public string ReasonForVisit { get; set; }
-    //public string Lifestyle { get; set; }
+
     public bool ConsentTreatment { get; set; } = false;
     public bool ConsentPrivacy { get; set; } = false;
     public bool ConsentBilling { get; set; } = false;
@@ -52,7 +47,7 @@ public class PatientProfile
     public List<SocialHistoryInput> SocialHistories { get; set; } = new();
 
     // Mental Health (Category = survey or exam)
-    public List<MentalHealthInput> MentalHealthAssessments { get; set; } = new();
+    //public List<MentalHealthInput> MentalHealthAssessments { get; set; } = new();
 
     public List<LifeStyleInput> LifestyleHistories { get; set; } = new();
 }
@@ -106,19 +101,19 @@ public class SocialHistoryInput
     public string InputType { get; set; } //number, text, dropdown, check
     public string? StatusCode { get; set; }    // Coded value (e.g., "Current Smoker")
     public string? StatusDisplay { get; set; }
-
     public int? StatusValue { get; set; }
 }
 
 public class LifeStyleInput
 {
-    public string BehaviorCode { get; set; }  // SNOMED/LOINC code (e.g., Smoking, Alcohol Use)
-    public string BehaviorName { get; set; }
+    public string LifestyleCode { get; set; }  // SNOMED/LOINC code (e.g., Smoking, Alcohol Use)
+    public string LifestyleName { get; set; }
     public string InputType { get; set; } //number, text, dropdown, check
     public string? StatusCode { get; set; }    // Coded value (e.g., "Current Smoker")
     public string? StatusDisplay { get; set; }
-
     public int? StatusValue { get; set; }
+
+    public string? Detail { get; set; }            // e.g., Exercises 3 times/week
 }
 
 public class SocialHistoryStatusInput
