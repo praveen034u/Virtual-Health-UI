@@ -11,7 +11,15 @@ public class MedPlumAPIService
 
     public MedPlumAPIService(IConfiguration config)
     {
-        _httpClient = new HttpClient();
+        //var handler = new HttpClientHandler
+        //{
+        //    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+        //};
+
+        _httpClient = new HttpClient()
+        {
+            BaseAddress = new Uri("https://localhost:7195")
+        }; 
         _config = config;
     }
 
