@@ -6,7 +6,7 @@
 @inject SecureStorageService SecureStorage
 @inject MedPlumAPIService MedplumService
 @inject IJSRuntime JS
-@inject HttpClient Http
+@inject HttpClient HttpBaseAddress
 
 <h3 class="mt-4 mb-4 text-primary">Create Patient Profile</h3>
 
@@ -377,8 +377,7 @@
 	private List<SocialHistoryStatusInput> socialHistoryStatus = new();
 	private string selectedStatusCode = string.Empty;
 	private string email = string.Empty;
-	//private HttpClient Http = new HttpClient { BaseAddress = new Uri("https://localhost:7236") };
-
+	
 	protected override async Task OnInitializedAsync()
 	{
 		email = await SecureStorage.GetUserIdAsync();
@@ -394,6 +393,8 @@
 		socialHistoryStatus = await LoadSocialHistoryStatus();
 
 		var profile = await MedplumService.GetPatientFullProfileAsync(email);
+
+
 		if (string.IsNullOrEmpty(profile.PatientId))
 		{
 			patientProfile.PatientAddress.Country = "USA";
@@ -568,7 +569,7 @@
 		List<VitalSignsInput> Vitals = new List<VitalSignsInput>();
 		try
 		{
-			var response = await Http.GetAsync("Data/Vitals.json");
+			var response = await HttpBaseAddress.GetAsync("Data/Vitals.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -590,7 +591,7 @@
 		List<ConditionInput> conditions = new List<ConditionInput>();
 		try
 		{
-			var response = await Http.GetAsync("Data/MedicalConditions.json");
+			var response = await HttpBaseAddress.GetAsync("Data/MedicalConditions.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -612,7 +613,7 @@
 		List<LabResultInput> labResults = new List<LabResultInput>();
 		try
 		{
-			var response = await Http.GetAsync("Data/LabResults.json");
+			var response = await HttpBaseAddress.GetAsync("Data/LabResults.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -634,7 +635,7 @@
 		List<ImagingResultInput> labResults = new List<ImagingResultInput>();
 		try
 		{
-			var response = await Http.GetAsync("Data/ImagingStudies.json");
+			var response = await HttpBaseAddress.GetAsync("Data/ImagingStudies.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -656,7 +657,7 @@
 		List<MentalHealthInput> labResults = new List<MentalHealthInput>();
 		try
 		{
-			var response = await Http.GetAsync("Data/MentalHealth.json");
+			var response = await HttpBaseAddress.GetAsync("Data/MentalHealth.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -678,7 +679,7 @@
 		List<SocialHistoryInput> socialHistory = new List<SocialHistoryInput>();
 		try
 		{
-			var response = await Http.GetAsync("Data/SocialHistoryBehavior.json");
+			var response = await HttpBaseAddress.GetAsync("Data/SocialHistoryBehavior.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -700,7 +701,7 @@
 		List<LifeStyleInput> lifeStyle = new List<LifeStyleInput>();
 		try
 		{
-			var response = await Http.GetAsync("Data/LifeStyle.json");
+			var response = await HttpBaseAddress.GetAsync("Data/LifeStyle.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -722,7 +723,7 @@
 		List<SocialHistoryStatusInput> socialHistory = new List<SocialHistoryStatusInput>();
 		try
 		{
-			var response = await Http.GetAsync("Data/SocialHistoryStatus.json");
+			var response = await HttpBaseAddress.GetAsync("Data/SocialHistoryStatus.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();

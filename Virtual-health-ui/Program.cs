@@ -12,7 +12,15 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<SecureStorageService>();
 builder.Services.AddScoped<MedPlumAPIService>();
 
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7236") });
+// Register multiple HttpClient instances manually
+builder.Services.AddScoped<MedplumWrapperApiHttpClient>(sp => new MedplumWrapperApiHttpClient(
+    new HttpClient
+    {
+        BaseAddress = new Uri("https://localhost:7195")
+    }
+));
+
+// Default HttpClient for the application
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)

@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net.Http;
+using System.Net.Http.Json;
 using VirtualHealth.UI.Models;
 //using System.Net.Http.Json; // For GetFromJsonAsync
 
@@ -9,9 +10,9 @@ public class MedPlumAPIService
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _config;
 
-    public MedPlumAPIService(IConfiguration config)
+    public MedPlumAPIService(IConfiguration config, MedplumWrapperApiHttpClient httpClient)
     {
-        _httpClient = new HttpClient();
+        _httpClient = httpClient.Client;
         _config = config;
     }
 
@@ -20,15 +21,16 @@ public class MedPlumAPIService
         var patient = new PatientProfile();
         // URL encode the email because @ is special character
         var encodedEmail = Uri.EscapeDataString(email);
-        var baseUrl = _config["MedPlum:ApiBaseUrl"];
-        var apiUrl = $"{baseUrl}/patient-full-profile/{encodedEmail}";
+        //var baseUrl = _config["MedPlum:ApiBaseUrl"];
+        //var apiUrl = $"{baseUrl}/patient-full-profile/{encodedEmail}";
 
-        var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
+        //var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
         //request.Headers.Add("Accept", "application/fhir+json");
 
         try
         {
-            var response = await _httpClient.SendAsync(request);
+            var response = await _httpClient.GetAsync($"/api/Medplum/patient-full-profile/{encodedEmail}");
+            //var response = await _httpClient.SendAsync(request);
             //var response = await _httpClient.GetAsync(url);
 
             if (response.IsSuccessStatusCode)
@@ -49,7 +51,6 @@ public class MedPlumAPIService
             return patient;
         }
         finally { 
-            request.Dispose();
             _httpClient.Dispose(); 
             patient = null;
         }
