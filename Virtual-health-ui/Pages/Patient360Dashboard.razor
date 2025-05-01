@@ -2,114 +2,116 @@
 @inject MedplumWrapperApiHttpClient MedPlumHttpClient
 @using System.Net.Http.Json
 
-<h2 class="mb-4 text-center">🩺 Patient 360° Health Dashboard</h2>
+<h3 class="text-primary mb-4">Patient 360 Dashboard</h3>
 
-@if (profile == null)
+@if (generalLabs == null || vitals == null || imagingResults == null || surveyScore == -1)
 {
-    <div class="text-center mt-4">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-2">Fetching patient data...</p>
-    </div>
+    <p><em>Loading...</em></p>
 }
 else
 {
-    <div class="container">
-        <div class="row mb-4">
-            <div class="col-md-6 mb-3">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">Patient Profile</div>
-                    <div class="card-body">
-                        <p><strong>Name:</strong> @profile.PatientName</p>
-                        <p><strong>Gender:</strong> @profile.Gender</p>
-                        <p><strong>DOB:</strong> @profile.BirthDate</p>
-                        <p><strong>Phone:</strong> @profile.PhoneNumber</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-success text-white">Current Vitals</div>
-                    <div class="card-body">
-                        @if (currentVitals != null && currentVitals.Any())
-                        {
-                            <ul class="list-group list-group-flush">
-                                @foreach (var vital in currentVitals)
-                                {
-                                    <li class="list-group-item">
-                                        <strong>@vital.Type:</strong> @vital.Value @vital.Unit
-                                        <br /><small class="text-muted">@vital.Timestamp.ToString("g")</small>
-                                    </li>
-                                }
-                            </ul>
-                        }
-                        else
-                        {
-                            <p class="text-muted">No current vitals found.</p>
-                        }
-                    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">Lab Results</div>
+                <div class="card-body p-2">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var lab in generalLabs.Take(6))
+                            {
+                                <tr>
+                                    <td>@lab.CodeDisplay</td>
+                                    <td>@lab.Value</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-warning text-dark">Vitals Trend</div>
-                    <div class="card-body">
-                        <p>[Vitals trend chart placeholder]</p>
-                        <!-- Future chart integration -->
-                    </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">Vitals</div>
+                <div class="card-body p-2">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var v in vitals.Take(6))
+                            {
+                                <tr>
+                                    <td>@v.CodeDisplay</td>
+                                    <td>@v.Value</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">Imaging</div>
+                <div class="card-body p-2">
+                    <ul class="mb-0">
+                        @foreach (var img in imagingResults.Take(3))
+                        {
+                            <li><strong>@img.CodeDisplay:</strong> @img.Value</li>
+                        }
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-md-6 mb-3">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-info text-white">Lab Results</div>
-                    <div class="card-body">
-                        @if (labResults != null && labResults.Any())
-                        {
-                            <ul class="list-group list-group-flush">
-                                @foreach (var result in labResults)
-                                {
-                                    <li class="list-group-item">
-                                        <strong>@result.TestName:</strong> @result.Value @result.Unit
-                                    </li>
-                                }
-                            </ul>
-                        }
-                        else
-                        {
-                            <p class="text-muted">No lab results found.</p>
-                        }
-                    </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">Mental Health</div>
+                <div class="card-body">
+                    <p><strong>PHQ-9 Score:</strong> @surveyScore</p>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="col-md-6 mb-3">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-dark text-white">Provider Observations</div>
-                    <div class="card-body">
-                        @if (providerNotes != null && providerNotes.Any())
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">Activity Summary</div>
+                <div class="card-body p-2">
+                    <ul class="mb-0">
+                        @foreach (var item in activitySummary.Take(3))
                         {
-                            <ul class="list-group list-group-flush">
-                                @foreach (var obs in providerNotes)
-                                {
-                                    <li class="list-group-item">
-                                        <strong>@obs.Category:</strong> @obs.Note
-                                    </li>
-                                }
-                            </ul>
+                            <li><strong>@item.CodeDisplay:</strong> @item.Value</li>
                         }
-                        else
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">Lifestyle</div>
+                <div class="card-body p-2">
+                    <ul class="mb-0">
+                        @foreach (var item in lifestyleInfo.Take(3))
                         {
-                            <p class="text-muted">No provider notes found.</p>
+                            <li><strong>@item.CodeDisplay:</strong> @item.Value</li>
                         }
-                    </div>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -120,45 +122,64 @@ else
     [Parameter] public string emailId { get; set; }
 
     private PatientProfileInput profile;
-    private List<Vital> currentVitals;
-    private List<Vital> vitalsTrend;
-    private List<LabResult> labResults;
-    private List<ProviderObservation> providerNotes;
+    private List<LabResultItem> generalLabs = new();
+    private List<LabResultItem> imagingResults = new();
+    private List<LabResultItem> vitals = new();
+    private List<LabResultItem> activitySummary = new();
+    private List<LabResultItem> lifestyleInfo = new();
+    private int surveyScore = -1;
     private static HttpClient _httpClient;
 
     protected override async Task OnInitializedAsync()
     {
-		_httpClient = MedPlumHttpClient.Client;
- 
+        emailId = "john.doe@example";
+        _httpClient = MedPlumHttpClient.Client;
         profile = await _httpClient.GetFromJsonAsync<PatientProfileInput>($"api/medplum/patient-full-profile/{emailId}.com");
         if (profile?.PatientId != null)
         {
-            currentVitals = await _httpClient.GetFromJsonAsync<List<Vital>>($"api/medplum/current-wearable-observations/{profile.PatientId}");
-            vitalsTrend = await _httpClient.GetFromJsonAsync<List<Vital>>($"api/medplum/vitals-trend/{profile.PatientId}");
-            //labResults = await _httpClient.GetFromJsonAsync<List<LabResult>>($"api/medplum/patient-lab-results/{profile.PatientId}");
-            providerNotes = await _httpClient.GetFromJsonAsync<List<ProviderObservation>>($"api/medplum/provider-reported-observations/{profile.PatientId}");
+            profile.PatientId = "019679d5-7564-763e-ba0b-2574c060329d";
+            generalLabs = GetDistinctLatestRecords((await _httpClient.GetFromJsonAsync<LabResultResponse>($"/api/Medplum/patient-lab-results/{profile.PatientId}"))?.GeneralLabs ?? new());
+            vitals = GetDistinctLatestRecords(await _httpClient.GetFromJsonAsync<List<LabResultItem>>($"/api/Medplum/current-wearable-observations/{profile.PatientId}") ?? new());
+
+            var providerData = await _httpClient.GetFromJsonAsync<ProviderObservationResponse>($"/api/Medplum/provider-reported-observations/{profile.PatientId}");
+            //vitals = GetDistinctLatestRecords(providerData?.VitalSigns ?? new());
+            lifestyleInfo = GetDistinctLatestRecords(providerData?.SocialHistory ?? new());
+            activitySummary = GetDistinctLatestRecords(providerData?.Activity ?? new());
+
+            var surveyItem = providerData?.Survey?.FirstOrDefault(x => x.CodeDisplay.Contains("PHQ-9"));
+            if (surveyItem != null && int.TryParse(surveyItem.Value?.Split(' ')[0], out int score))
+            {
+                surveyScore = score;
+            }
         }
     }
 
-    public class Vital
+    private List<LabResultItem> GetDistinctLatestRecords(List<LabResultItem> items)
     {
-        public string Type { get; set; }
-        public string Value { get; set; }
-        public string Unit { get; set; }
-        public DateTime Timestamp { get; set; }
+        return items
+            .GroupBy(item => item.CodeDisplay)
+            .Select(group => group.OrderByDescending(item => item.EffectiveDateTime).First())
+            .ToList();
     }
 
-    public class LabResult
+    public class LabResultItem
     {
-        public string TestName { get; set; }
+        public string CodeDisplay { get; set; }
         public string Value { get; set; }
-        public string Unit { get; set; }
+        public DateTime EffectiveDateTime { get; set; }
     }
 
-    public class ProviderObservation
+    public class LabResultResponse
     {
-        public string Category { get; set; }
-        public string Note { get; set; }
+        public List<LabResultItem> GeneralLabs { get; set; }
+    }
+
+    public class ProviderObservationResponse
+    {
+        public List<LabResultItem> VitalSigns { get; set; }
+        public List<LabResultItem> SocialHistory { get; set; }
+        public List<LabResultItem> Activity { get; set; }
+        public List<LabResultItem> Survey { get; set; }
     }
 
     public class PatientProfileInput
