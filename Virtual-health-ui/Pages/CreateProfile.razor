@@ -325,7 +325,7 @@
 								@if (socialStatuses?.Any() == true)
 								{
 									<InputSelect @bind-Value="lifeStyle.StatusCode"
-												 class="form-control">
+									class="form-control">
 										<option value="none">-- Select Status --</option>
 										@foreach (var socialStatus in socialStatuses)
 										{
@@ -371,13 +371,13 @@
 		<button type="button" class="btn btn-secondary" @onclick="GenerateSummary">Download Summary</button>
 	</div>
 </EditForm>
-
 @code {
 	private PatientProfile patientProfile = new();
 	private List<SocialHistoryStatusInput> socialHistoryStatus = new();
 	private string selectedStatusCode = string.Empty;
 	private string email = string.Empty;
-	
+	//private HttpClient Http = new HttpClient { BaseAddress = new Uri("https://localhost:7236") };
+
 	protected override async Task OnInitializedAsync()
 	{
 		email = await SecureStorage.GetUserIdAsync();
@@ -393,8 +393,6 @@
 		socialHistoryStatus = await LoadSocialHistoryStatus();
 
 		var profile = await MedplumService.GetPatientFullProfileAsync(email);
-
-
 		if (string.IsNullOrEmpty(profile.PatientId))
 		{
 			patientProfile.PatientAddress.Country = "USA";
@@ -569,7 +567,7 @@
 		List<VitalSignsInput> Vitals = new List<VitalSignsInput>();
 		try
 		{
-			var response = await HttpBaseAddress.GetAsync("Data/Vitals.json");
+			var response = await Http.GetAsync("Data/Vitals.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -591,7 +589,7 @@
 		List<ConditionInput> conditions = new List<ConditionInput>();
 		try
 		{
-			var response = await HttpBaseAddress.GetAsync("Data/MedicalConditions.json");
+			var response = await Http.GetAsync("Data/MedicalConditions.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -613,7 +611,7 @@
 		List<LabResultInput> labResults = new List<LabResultInput>();
 		try
 		{
-			var response = await HttpBaseAddress.GetAsync("Data/LabResults.json");
+			var response = await Http.GetAsync("Data/LabResults.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -635,7 +633,7 @@
 		List<ImagingResultInput> labResults = new List<ImagingResultInput>();
 		try
 		{
-			var response = await HttpBaseAddress.GetAsync("Data/ImagingStudies.json");
+			var response = await Http.GetAsync("Data/ImagingStudies.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -657,7 +655,7 @@
 		List<MentalHealthInput> labResults = new List<MentalHealthInput>();
 		try
 		{
-			var response = await HttpBaseAddress.GetAsync("Data/MentalHealth.json");
+			var response = await Http.GetAsync("Data/MentalHealth.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -679,7 +677,7 @@
 		List<SocialHistoryInput> socialHistory = new List<SocialHistoryInput>();
 		try
 		{
-			var response = await HttpBaseAddress.GetAsync("Data/SocialHistoryBehavior.json");
+			var response = await Http.GetAsync("Data/SocialHistoryBehavior.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -701,7 +699,7 @@
 		List<LifeStyleInput> lifeStyle = new List<LifeStyleInput>();
 		try
 		{
-			var response = await HttpBaseAddress.GetAsync("Data/LifeStyle.json");
+			var response = await Http.GetAsync("Data/LifeStyle.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
@@ -723,7 +721,7 @@
 		List<SocialHistoryStatusInput> socialHistory = new List<SocialHistoryStatusInput>();
 		try
 		{
-			var response = await HttpBaseAddress.GetAsync("Data/SocialHistoryStatus.json");
+			var response = await Http.GetAsync("Data/SocialHistoryStatus.json");
 			if (response.IsSuccessStatusCode)
 			{
 				var json = await response.Content.ReadAsStringAsync();
