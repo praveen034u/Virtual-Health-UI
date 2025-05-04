@@ -206,6 +206,10 @@ else
 
     private string GetSurveyInterpretation(string scoreText)
     {
+		if (!string.IsNullOrEmpty(scoreText))
+		{
+            scoreText = scoreText.Replace("score", "").Trim();
+		}
         if (int.TryParse(scoreText, out var score))
         {
             if (score <= 4) return "Minimal or no depression";
