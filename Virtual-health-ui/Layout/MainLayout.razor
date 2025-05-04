@@ -5,16 +5,15 @@
 <div class="page">
 
     @if (!Navigation.Uri.Contains("VirtualHealthhome") && !Navigation.Uri.EndsWith("/") && !Navigation.Uri.EndsWith("/#"))
-        {
-              @*    <div class="sidebar">
-                  <NavMenu />
-                 </div> *@
-        }
-    
+    {
+        @* <div class="sidebar">
+            <NavMenu />
+           </div> *@
+    }
 
     <main>
-        <div class="top-row px-4 auth">
-             <LoginDisplay /> 
+        <div class="top-row px-4 d-flex justify-content-end align-items-center gap-3">
+            <LoginDisplay />
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
         </div>
 
@@ -23,10 +22,11 @@
         </article>
     </main>
 </div>
+
 @code {
-	private string userRole;
-	protected override async Task OnInitializedAsync()
-	{
-		userRole = await SecureStorage.GetItemAsync("user_role");
-	}
+    private string userRole;
+    protected override async Task OnInitializedAsync()
+    {
+        userRole = await SecureStorage.GetItemAsync("user_role");
+    }
 }
