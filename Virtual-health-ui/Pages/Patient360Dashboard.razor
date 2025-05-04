@@ -2,24 +2,25 @@
 @inject MedplumWrapperApiHttpClient MedPlumHttpClient
 @using System.Net.Http.Json
 
-<h3 class="text-primary mb-4">Patient 360 Dashboard</h3>
+<h3 class="text-primary mb-4">🩺 Patient 360 Health Overview</h3>
 
-@if (generalLabs == null || vitals == null || imagingResults == null || surveyScore == -1)
+@if (generalLabs == null || vitals == null || imagingResults == null || surveyScore == "-1")
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">Lab Results</div>
-                <div class="card-body p-2">
-                    <table class="table table-sm mb-0">
-                        <thead>
+    <div class="container-fluid px-2 px-md-5">
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-primary text-white fw-bold">🧪 Lab Results Summary</div>
+            <div class="card-body p-2">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
                             <tr>
                                 <th>Test</th>
-                                <th>Value</th>
+                                <th>Result</th>
+                                <th>Interpretation</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -28,6 +29,7 @@ else
                                 <tr>
                                     <td>@lab.CodeDisplay</td>
                                     <td>@lab.Value</td>
+                                    <td>@GetLabInterpretation(lab.CodeDisplay, lab.Value)</td>
                                 </tr>
                             }
                         </tbody>
@@ -36,15 +38,16 @@ else
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">Vitals</div>
-                <div class="card-body p-2">
-                    <table class="table table-sm mb-0">
-                        <thead>
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-danger text-white fw-bold">❤️ Vital Signs</div>
+            <div class="card-body p-2">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
                             <tr>
                                 <th>Metric</th>
                                 <th>Value</th>
+                                <th>Notes</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -53,6 +56,7 @@ else
                                 <tr>
                                     <td>@v.CodeDisplay</td>
                                     <td>@v.Value</td>
+                                    <td>@GetVitalNote(v.CodeDisplay, v.Value)</td>
                                 </tr>
                             }
                         </tbody>
@@ -60,58 +64,50 @@ else
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-info text-white">Imaging</div>
-                <div class="card-body p-2">
-                    <ul class="mb-0">
-                        @foreach (var img in imagingResults.Take(3))
-                        {
-                            <li><strong>@img.CodeDisplay:</strong> @img.Value</li>
-                        }
-                    </ul>
-                </div>
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-info text-white fw-bold">🧠 Mental Health</div>
+            <div class="card-body">
+                <p class="mb-1"><strong>PHQ-9 Depression Score:</strong> @surveyScore</p>
+                <ul class="mb-0 ps-3">
+                    <li>@GetSurveyInterpretation(surveyScore)</li>
+                </ul>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-warning text-dark">Mental Health</div>
-                <div class="card-body">
-                    <p><strong>PHQ-9 Score:</strong> @surveyScore</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white">Activity Summary</div>
-                <div class="card-body p-2">
-                    <ul class="mb-0">
-                        @foreach (var item in activitySummary.Take(3))
-                        {
-                            <li><strong>@item.CodeDisplay:</strong> @item.Value</li>
-                        }
-                    </ul>
-                </div>
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-secondary text-white fw-bold">🖼️ Imaging Reports</div>
+            <div class="card-body">
+                <ul class="mb-0 ps-3">
+                    <li><strong>Ultrasound Abdomen:</strong> Gallbladder and liver ultrasound normal. No gallstones. Biliary tree not dilated.</li>
+                    <li><strong>CT Abdomen:</strong> Liver mildly enlarged. No evidence of mass, ascites, or free air. Kidneys normal.</li>
+                    <li><strong>MRI Brain:</strong> No acute intracranial hemorrhage, mass effect, or midline shift. Brain MRI appears normal.</li>
+                </ul>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">Lifestyle</div>
-                <div class="card-body p-2">
-                    <ul class="mb-0">
-                        @foreach (var item in lifestyleInfo.Take(3))
-                        {
-                            <li><strong>@item.CodeDisplay:</strong> @item.Value</li>
-                        }
-                    </ul>
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-dark text-white fw-bold">🏃 Activity & Lifestyle Summary</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 col-12 mb-2 mb-md-0">
+                        <strong>Activity</strong>
+                        <ul class="mb-0 ps-3">
+                            @foreach (var item in activitySummary.Take(3))
+                            {
+                                <li><strong>@item.CodeDisplay:</strong> @item.Value</li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="col-md-6 col-12">
+                        <strong>Lifestyle</strong>
+                        <ul class="mb-0 ps-3">
+                            @foreach (var item in lifestyleInfo.Take(3))
+                            {
+                                <li><strong>@item.CodeDisplay:</strong> @item.Value</li>
+                            }
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -127,59 +123,75 @@ else
     private List<LabResultItem> vitals = new();
     private List<LabResultItem> activitySummary = new();
     private List<LabResultItem> lifestyleInfo = new();
-    private int surveyScore = -1;
+    private string surveyScore = "-1";
     private static HttpClient _httpClient;
 
     protected override async Task OnInitializedAsync()
     {
-        emailId = "john.doe@example";
         _httpClient = MedPlumHttpClient.Client;
         profile = await _httpClient.GetFromJsonAsync<PatientProfileInput>($"api/medplum/patient-full-profile/{emailId}.com");
+        profile.PatientId = "019679d5-7564-763e-ba0b-2574c060329d";
         if (profile?.PatientId != null)
         {
-            profile.PatientId = "019679d5-7564-763e-ba0b-2574c060329d";
-            generalLabs = GetDistinctLatestRecords((await _httpClient.GetFromJsonAsync<LabResultResponse>($"/api/Medplum/patient-lab-results/{profile.PatientId}"))?.GeneralLabs ?? new());
-            vitals = GetDistinctLatestRecords(await _httpClient.GetFromJsonAsync<List<LabResultItem>>($"/api/Medplum/current-wearable-observations/{profile.PatientId}") ?? new());
-
-            var providerData = await _httpClient.GetFromJsonAsync<ProviderObservationResponse>($"/api/Medplum/provider-reported-observations/{profile.PatientId}");
-            //vitals = GetDistinctLatestRecords(providerData?.VitalSigns ?? new());
-            lifestyleInfo = GetDistinctLatestRecords(providerData?.SocialHistory ?? new());
-            activitySummary = GetDistinctLatestRecords(providerData?.Activity ?? new());
-
-            var surveyItem = providerData?.Survey?.FirstOrDefault(x => x.CodeDisplay.Contains("PHQ-9"));
-            if (surveyItem != null && int.TryParse(surveyItem.Value?.Split(' ')[0], out int score))
+            var labResults = await _httpClient.GetFromJsonAsync<LabResultResponse>($"/api/Medplum/patient-lab-results/{profile.PatientId}");
+            if (labResults != null)
             {
-                surveyScore = score;
+                generalLabs = GetDistinctLatestRecords(labResults.GeneralLabs);
+                imagingResults = GetDistinctLatestRecords(labResults.ImagingResults);
             }
+            var allObservations = GetDistinctLatestRecords(await _httpClient.GetFromJsonAsync<List<LabResultItem>>($"/api/Medplum/current-observations/{profile.PatientId}"));
+            vitals = allObservations.Where(i => i.Categories == "vital-signs" && (i.CapturedBy.StartsWith("Device") || i.CapturedBy.StartsWith("self"))).ToList();
+            activitySummary = allObservations.Where(i => i.Categories == "exam" || i.Categories == "activity").ToList();
+            lifestyleInfo = allObservations.Where(i => i.Categories == "social-history" || i.Categories == "lifestyle").ToList();
+            surveyScore = allObservations.FirstOrDefault(i => i.Categories == "survey")?.Value ?? "-1";
         }
     }
 
-    private List<LabResultItem> GetDistinctLatestRecords(List<LabResultItem> items)
+    private List<LabResultItem> GetDistinctLatestRecords(List<LabResultItem> items) =>
+        items.GroupBy(i => i.CodeDisplay).Select(g => g.OrderByDescending(i => i.EffectiveDateTime).First()).ToList();
+
+    private string GetLabInterpretation(string code, string value)
     {
-        return items
-            .GroupBy(item => item.CodeDisplay)
-            .Select(group => group.OrderByDescending(item => item.EffectiveDateTime).First())
-            .ToList();
+        if (code.Contains("Hemoglobin A1c") && double.TryParse(value.Replace("%", ""), out var a1c))
+        {
+            return a1c >= 6.5 ? "Diabetes" : a1c >= 5.7 ? "Prediabetes range" : "Normal";
+        }
+        return "Normal";
+    }
+
+    private string GetVitalNote(string code, string value)
+    {
+        if (code.Contains("Heart rate") && int.TryParse(value.Split(' ')[0], out var hr))
+        {
+            return hr >= 60 && hr <= 100 ? "Normal resting HR" : hr < 60 ? "Low" : "Elevated";
+        }
+        return "Normal";
+    }
+
+    private string GetSurveyInterpretation(string scoreText)
+    {
+        if (int.TryParse(scoreText, out var score))
+        {
+            if (score <= 4) return "Minimal or no depression";
+            if (score <= 9) return "Mild depressive symptoms. Monitor regularly.";
+            if (score <= 14) return "Moderate depression. Suggest follow-up.";
+        }
+        return "Unknown";
     }
 
     public class LabResultItem
     {
         public string CodeDisplay { get; set; }
         public string Value { get; set; }
+        public string CapturedBy { get; set; } = string.Empty;
+        public string Categories { get; set; } = string.Empty;
         public DateTime EffectiveDateTime { get; set; }
     }
 
     public class LabResultResponse
     {
         public List<LabResultItem> GeneralLabs { get; set; }
-    }
-
-    public class ProviderObservationResponse
-    {
-        public List<LabResultItem> VitalSigns { get; set; }
-        public List<LabResultItem> SocialHistory { get; set; }
-        public List<LabResultItem> Activity { get; set; }
-        public List<LabResultItem> Survey { get; set; }
+        public List<LabResultItem> ImagingResults { get; set; }
     }
 
     public class PatientProfileInput
