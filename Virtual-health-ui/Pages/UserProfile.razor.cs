@@ -4,7 +4,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace VirtualHealth.UI.Pages;
 
-public partial class CreateProfile
+public partial class UserProfile
 {
     private PatientProfile patientProfile = new();
     private List<SocialHistoryStatusInput> socialHistoryStatus = new();

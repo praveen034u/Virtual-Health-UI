@@ -114,29 +114,27 @@
         // Check profile from API
         //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        var response = await _httpClient.GetAsync($"/api/Medplum/patient-full-profile/{userId}");
-        if (!response.IsSuccessStatusCode)
-        {
-            Console.WriteLine("Profile not found, redirecting to Create Profile.");
-            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
-            return;
+        var patientId = await _secureStorage.GetItemAsync("vh_patient_id");
+
+		if (string.IsNullOrEmpty(patientId))
+		{
+		    var response = await _httpClient.GetAsync($"/api/Medplum/patient-full-profile/{userId}");
+            if (!response.IsSuccessStatusCode)
+            {
+               Console.WriteLine("Profile not found, redirecting to Create Profile.");
+                _navigationManager.NavigateTo("/user-profile/create", forceLoad: true);
+               return;
+            }
+
+           var profileJsonData = await response.Content.ReadAsStringAsync();
+           var profile = await _secureStorage.GetUserProfileAsync(profileJsonData);
+        
+           await _secureStorage.SetItemAsync("vh_patient_id", profile.PatientId);
         }
 
-        var profileJsonData = await response.Content.ReadAsStringAsync();
-        var profile = await _secureStorage.GetUserProfileAsync(profileJsonData);
-
-        if (profile == null)
-        {
-            Console.WriteLine("Invalid profile response, redirecting to Create Profile.");
-            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
-            return;
-        }
-        _secureStorage.SetItemAsync("sb_user_profile", profileJsonData);
-
-        var encodedEmail = Uri.EscapeDataString(userId);
 
         Console.WriteLine("Unknown role, redirecting to Create Profile.");
-        _navigationManager.NavigateTo("/dashboard/" + encodedEmail.Replace(".com", ""), forceLoad: true);
+        _navigationManager.NavigateTo("/dashboard", forceLoad: true);
            
     }
 

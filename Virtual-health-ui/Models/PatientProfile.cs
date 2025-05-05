@@ -132,3 +132,10 @@ public class MentalHealthInput
     public string Unit { get; set; }         // e.g., "score"
     public string NormalRange { get; set; }
 }
+
+public class UserSecureProfile
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    // Other properties...
+}

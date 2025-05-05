@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using VirtualHealth.UI;
+using VirtualHealth.UI.Models;
 
 public class SecureStorageService
 {
@@ -51,19 +52,19 @@ public class SecureStorageService
 
     }
 
-    public async Task<UserProfile> GetUserProfileAsync(string userProfileJson)
+    public async Task<PatientProfile> GetUserProfileAsync(string userProfileJson)
     {
 
-        var userProfile = JsonSerializer.Deserialize<UserProfile>(userProfileJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var userProfile = JsonSerializer.Deserialize<PatientProfile>(userProfileJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         return userProfile;
 
     }
 
-    public async Task<UserProfile> GetSecureUserProfileAsync(string userProfileJson)
+    public async Task<PatientProfile> GetSecureUserProfileAsync(string userProfileJson)
     {
 
-        var userSecureProfile = JsonSerializer.Deserialize<UserProfile>(userProfileJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var userSecureProfile = JsonSerializer.Deserialize<PatientProfile>(userProfileJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         return userSecureProfile;
 
