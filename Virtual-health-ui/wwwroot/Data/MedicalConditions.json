@@ -1,0 +1,42 @@
+[
+  {
+    "code": "44054006",
+    "display": "Diabetes mellitus type 2"
+  },
+  {
+    "code": "38341003",
+    "display": "Hypertension"
+  },
+  {
+    "code": "195967001",
+    "display": "Asthma"
+  },
+  {
+    "code": "233604007",
+    "display": "Pneumonia"
+  },
+  {
+    "code": "22298006",
+    "display": "Myocardial infarction"
+  },
+  {
+    "code": "49601007",
+    "display": "Obesity"
+  },
+  {
+    "code": "58690002",
+    "display": "Chronic kidney disease"
+  },
+  {
+    "code": "55822004",
+    "display": "Heart failure"
+  },
+  {
+    "code": "443883004",
+    "display": "Depressive disorder"
+  },
+  {
+    "code": "10601006",
+    "display": "Anxiety disorder"
+  }
+]

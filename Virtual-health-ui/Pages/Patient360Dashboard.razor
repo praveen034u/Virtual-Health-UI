@@ -1,0 +1,249 @@
+﻿@page "/dashboard"
+@inject MedplumWrapperApiHttpClient MedPlumHttpClient
+@inject SecureStorageService SecureStorage
+@using System.Net.Http.Json
+
+<h3 class="text-primary mb-4 d-flex justify-content-between align-items-center">
+    🩺 Patient 360 Health Overview
+    <button class="btn btn-outline-primary btn-sm" @onclick="ShowHealthTips">💡 View AI Health Tips</button>
+</h3>
+
+@if (generalLabs == null || vitals == null || imagingResults == null || surveyScore == "-1")
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="container-fluid px-2 px-md-5">
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-primary text-white fw-bold">🧪 Lab Results Summary</div>
+            <div class="card-body p-2">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Test</th>
+                                <th>Result</th>
+                                <th>Interpretation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var lab in generalLabs.Take(6))
+                            {
+                                <tr>
+                                    <td>@lab.CodeDisplay</td>
+                                    <td>@lab.Value</td>
+                                    <td>@GetLabInterpretation(lab.CodeDisplay, lab.Value)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-danger text-white fw-bold">❤️ Vital Signs</div>
+            <div class="card-body p-2">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var v in vitals.Take(6))
+                            {
+                                <tr>
+                                    <td>@v.CodeDisplay</td>
+                                    <td>@v.Value</td>
+                                    <td>@GetVitalNote(v.CodeDisplay, v.Value)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-info text-white fw-bold">🧠 Mental Health</div>
+            <div class="card-body">
+                <p class="mb-1"><strong>PHQ-9 Depression Score:</strong> @surveyScore</p>
+                <ul class="mb-0 ps-3">
+                    <li>@GetSurveyInterpretation(surveyScore)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-secondary text-white fw-bold">🖼️ Imaging Reports</div>
+            <div class="card-body">
+                <ul class="mb-0 ps-3">
+                    <li><strong>Ultrasound Abdomen:</strong> Gallbladder and liver ultrasound normal. No gallstones. Biliary tree not dilated.</li>
+                    <li><strong>CT Abdomen:</strong> Liver mildly enlarged. No evidence of mass, ascites, or free air. Kidneys normal.</li>
+                    <li><strong>MRI Brain:</strong> No acute intracranial hemorrhage, mass effect, or midline shift. Brain MRI appears normal.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm rounded-3 animate__animated animate__fadeInUp">
+            <div class="card-header bg-dark text-white fw-bold">🏃 Activity & Lifestyle Summary</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 col-12 mb-2 mb-md-0">
+                        <strong>Activity</strong>
+                        <ul class="mb-0 ps-3">
+                            @foreach (var item in activitySummary.Take(3))
+                            {
+                                <li><strong>@item.CodeDisplay:</strong> @item.Value</li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="col-md-6 col-12">
+                        <strong>Lifestyle</strong>
+                        <ul class="mb-0 ps-3">
+                            @foreach (var item in lifestyleInfo.Take(3))
+                            {
+                                <li><strong>@item.CodeDisplay:</strong> @item.Value</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showHealthTipsModal)
+{
+    <div class="modal fade show d-block" tabindex="-1"
+         style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1050;">
+       <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 90%;">
+           <div class="modal-content animate__animated animate__zoomIn" style="margin-left:30%">
+               <div class="modal-header">
+                   <h5 class="modal-title">🧠 Personalized Health Tips (AI)</h5>
+                   <button type="button" class="btn-close" @onclick="HideHealthTips"></button>
+               </div>
+               <div class="modal-body">
+                   <p><strong>Based on your 360 health data, here are some personalized recommendations:</strong></p>
+                   <ul class="text-start ps-3">
+                       <li>Keep A1c under control with regular exercise and reduced sugar intake.</li>
+                       <li>Maintain cholesterol levels by adding omega-3 rich foods like fish or flaxseed.</li>
+                       <li>Continue regular physical activity (3–4 times/week) to support VO2 max.</li>
+                       <li>Use mindfulness techniques to address mild depressive symptoms.</li>
+                       <li>Stay hydrated and track your vitals via wearable devices.</li>
+                   </ul>
+                   <p class="text-muted small">(Generated by AI model. For educational purposes only. Consult your doctor for clinical decisions.)</p>
+               </div>
+               <div class="modal-footer">
+                   <button class="btn btn-secondary" @onclick="HideHealthTips">Close</button>
+               </div>
+           </div>
+       </div>
+    </div>
+
+}
+
+@code {
+    private bool showHealthTipsModal = false;
+
+    private void ShowHealthTips() => showHealthTipsModal = true;
+    private void HideHealthTips() => showHealthTipsModal = false;
+    private PatientProfileInput profile;
+    private List<LabResultItem> generalLabs = new();
+    private List<LabResultItem> imagingResults = new();
+    private List<LabResultItem> vitals = new();
+    private List<LabResultItem> activitySummary = new();
+    private List<LabResultItem> lifestyleInfo = new();
+    private string surveyScore = "-1";
+    private static HttpClient _httpClient;
+    private static SecureStorageService _secureStorage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var emailId = "matrix@ai.com"; //await _secureStorage.GetItemAsync("user_id");
+        _httpClient = MedPlumHttpClient.Client;
+        profile = await _httpClient.GetFromJsonAsync<PatientProfileInput>($"api/medplum/patient-full-profile/{emailId}");
+        profile.PatientId = "019679d5-7564-763e-ba0b-2574c060329d";
+        if (profile?.PatientId != null)
+        {
+            var labResults = await _httpClient.GetFromJsonAsync<LabResultResponse>($"/api/Medplum/patient-lab-results/{profile.PatientId}");
+            if (labResults != null)
+            {
+                generalLabs = GetDistinctLatestRecords(labResults.GeneralLabs);
+                imagingResults = GetDistinctLatestRecords(labResults.ImagingResults);
+            }
+            var allObservations = GetDistinctLatestRecords(await _httpClient.GetFromJsonAsync<List<LabResultItem>>($"/api/Medplum/current-observations/{profile.PatientId}"));
+            vitals = allObservations.Where(i => i.Categories == "vital-signs" && (i.CapturedBy.StartsWith("Device") || i.CapturedBy.StartsWith("self"))).ToList();
+            activitySummary = allObservations.Where(i => i.Categories == "exam" || i.Categories == "activity").ToList();
+            lifestyleInfo = allObservations.Where(i => i.Categories == "social-history" || i.Categories == "lifestyle").ToList();
+            surveyScore = allObservations.FirstOrDefault(i => i.Categories == "survey")?.Value ?? "-1";
+        }
+    }
+
+    private List<LabResultItem> GetDistinctLatestRecords(List<LabResultItem> items) =>
+        items.GroupBy(i => i.CodeDisplay).Select(g => g.OrderByDescending(i => i.EffectiveDateTime).First()).ToList();
+
+    private string GetLabInterpretation(string code, string value)
+    {
+        if (code.Contains("Hemoglobin A1c") && double.TryParse(value.Replace("%", ""), out var a1c))
+        {
+            return a1c >= 6.5 ? "Diabetes" : a1c >= 5.7 ? "Prediabetes range" : "Normal";
+        }
+        return "Normal";
+    }
+
+    private string GetVitalNote(string code, string value)
+    {
+        if (code.Contains("Heart rate") && int.TryParse(value.Split(' ')[0], out var hr))
+        {
+            return hr >= 60 && hr <= 100 ? "Normal resting HR" : hr < 60 ? "Low" : "Elevated";
+        }
+        return "Normal";
+    }
+
+    private string GetSurveyInterpretation(string scoreText)
+    {
+		if (!string.IsNullOrEmpty(scoreText))
+		{
+            scoreText = scoreText.Replace("score", "").Trim();
+		}
+        if (int.TryParse(scoreText, out var score))
+        {
+            if (score <= 4) return "Minimal or no depression";
+            if (score <= 9) return "Mild depressive symptoms. Monitor regularly.";
+            if (score <= 14) return "Moderate depression. Suggest follow-up.";
+        }
+        return "Unknown";
+    }
+
+    public class LabResultItem
+    {
+        public string CodeDisplay { get; set; }
+        public string Value { get; set; }
+        public string CapturedBy { get; set; } = string.Empty;
+        public string Categories { get; set; } = string.Empty;
+        public DateTime EffectiveDateTime { get; set; }
+    }
+
+    public class LabResultResponse
+    {
+        public List<LabResultItem> GeneralLabs { get; set; }
+        public List<LabResultItem> ImagingResults { get; set; }
+    }
+
+    public class PatientProfileInput
+    {
+        public string PatientId { get; set; }
+        public string PatientName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Gender { get; set; }
+        public string BirthDate { get; set; }
+        public string PhoneNumber { get; set; }
+    }
+}

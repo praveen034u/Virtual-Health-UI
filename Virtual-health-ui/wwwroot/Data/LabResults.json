@@ -1,0 +1,44 @@
+[
+  {
+    "testCode": "718-7",
+    "testName": "Hemoglobin [Mass/volume] in Blood",
+    "system": "LOINC",
+    "unit": "g/dL",
+    "normalRange": "12.0-17.5"
+  },
+  {
+    "testCode": "4548-4",
+    "testName": "Hematocrit [Volume Fraction] of Blood",
+    "system": "LOINC",
+    "unit": "%",
+    "normalRange": "36.0-50.0"
+  },
+  {
+    "testCode": "2345-7",
+    "testName": "Glucose [Mass/volume] in Blood",
+    "system": "LOINC",
+    "unit": "mg/dL",
+    "normalRange": "70.0-99.0"
+  },
+  {
+    "testCode": "2085-9",
+    "testName": "Cholesterol in HDL [Mass/volume] in Serum or Plasma",
+    "system": "LOINC",
+    "unit": "mg/dL",
+    "normalRange": "40.0-60.0"
+  },
+  {
+    "testCode": "2089-1",
+    "testName": "Cholesterol in LDL [Mass/volume] in Serum or Plasma",
+    "system": "LOINC",
+    "unit": "mg/dL",
+    "normalRange": "0.0-129.0"
+  },
+  {
+    "testCode": "2823-3",
+    "testName": "Potassium [Moles/volume] in Serum or Plasma",
+    "system": "LOINC",
+    "unit": "mmol/L",
+    "normalRange": "3.5-5.1"
+  }
+]

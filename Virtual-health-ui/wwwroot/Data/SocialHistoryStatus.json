@@ -1,0 +1,87 @@
+[
+  {
+    "behaviorCode": "72166-2",
+    "statusCode": "449868002",
+    "statusDisplay": "Current every day smoker"
+  },
+  {
+    "behaviorCode": "72166-2",
+    "statusCode": "428041000124106",
+    "statusDisplay": "Current some day smoker"
+  },
+  {
+    "behaviorCode": "72166-2",
+    "statusCode": "8517006",
+    "statusDisplay": "Former smoker"
+  },
+  {
+    "behaviorCode": "72166-2",
+    "statusCode": "266919005",
+    "statusDisplay": "Never smoker"
+  },
+  {
+    "behaviorCode": "72166-2",
+    "statusCode": "77176002",
+    "statusDisplay": "Smoker, current status unknown"
+  },
+  {
+    "behaviorCode": "72166-2",
+    "statusCode": "266927001",
+    "statusDisplay": "Unknown if ever smoked"
+  },
+  {
+    "behaviorCode": "11341-5",
+    "statusCode": "160573003",
+    "statusDisplay": "Current drinker"
+  },
+  {
+    "behaviorCode": "11341-5",
+    "statusCode": "105539002",
+    "statusDisplay": "Ex-drinker"
+  },
+  {
+    "behaviorCode": "11341-5",
+    "statusCode": "160588000",
+    "statusDisplay": "Never drank alcohol"
+  },
+  {
+    "behaviorCode": "11341-5",
+    "statusCode": "443883004",
+    "statusDisplay": "Unknown alcohol use"
+  },
+  {
+    "behaviorCode": "10157-6",
+    "inputType": "number",
+    "units": "hours/week"
+  },
+  {
+    "behaviorCode": "75186-7",
+    "statusCode": "vegetarian",
+    "statusDisplay": "Vegetarian"
+  },
+  {
+    "behaviorCode": "75186-7",
+    "statusCode": "non-vegetarian",
+    "statusDisplay": "Non-Vegetarian"
+  },
+  {
+    "behaviorCode": "75186-7",
+    "statusCode": "vegan",
+    "statusDisplay": "Vegan"
+  },
+  {
+    "behaviorCode": "75186-7",
+    "statusCode": "paleo",
+    "statusDisplay": "Paleo"
+  },
+  {
+    "behaviorCode": "75186-7",
+    "statusCode": "keto",
+    "statusDisplay": "Keto"
+  },
+  {
+    "behaviorCode": "75186-7",
+    "statusCode": "other",
+    "statusDisplay": "Other"
+  }
+]

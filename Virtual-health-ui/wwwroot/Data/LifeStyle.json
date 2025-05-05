@@ -1,0 +1,14 @@
+[
+  {
+    "lifestyleCode": "10157-6",
+    "lifestyleName": "Exercise hours per week",
+    "inputType": "number",
+    "system": "LOINC"
+  },
+  {
+    "lifestyleCode": "75186-7",
+    "lifestyleName": "Dietary habits",
+    "inputType": "dropdown",
+    "system": "LOINC"
+  }
+]

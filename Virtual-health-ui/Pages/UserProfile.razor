@@ -1,0 +1,374 @@
+﻿@page "/user-profile"
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@using VirtualHealth.UI.Models
+@using VirtualHealth.UI.Services
+@inject SecureStorageService SecureStorage
+@inject MedPlumAPIService MedplumService
+@inject IJSRuntime JS
+@inject HttpClient Http
+
+<h3 class="mt-4 mb-4 text-primary">Create Patient Profile</h3>
+
+<EditForm Model="@patientProfile" OnValidSubmit="@HandleValidSubmit">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+
+	<div class="accordion" id="profileAccordion">
+		<!-- Personal Details -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingPersonal">
+				<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePersonal" aria-expanded="true" aria-controls="collapsePersonal">
+					1. Personal Details
+				</button>
+			</h2>
+			<div id="collapsePersonal" class="accordion-collapse collapse show" aria-labelledby="headingPersonal" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					<div class="form-group">
+						<label>First Name <span class="text-danger">*</span></label>
+						<InputText @bind-Value="patientProfile.FirstName" class="form-control" placeholder="John" />
+					</div>
+					<div class="form-group">
+						<label>Last Name <span class="text-danger">*</span></label>
+						<InputText @bind-Value="patientProfile.LastName" class="form-control" placeholder="Doe" />
+					</div>
+					<div class="form-group">
+						<label>Date of Birth <span class="text-danger">*</span></label>
+						<InputDate @bind-Value="patientProfile.BirthDate" class="form-control" />
+					</div>
+					<div class="form-group">
+						<label>Gender <span class="text-danger">*</span></label>
+						<InputSelect @bind-Value="patientProfile.Gender" class="form-control">
+							<option value="">-- Select Gender --</option>
+							<option value="male">Male</option>
+							<option value="female">Female</option>
+							<option value="other">Other</option>
+							<option value="unknown">Unknown</option>
+						</InputSelect>
+					</div>
+
+					<div class="form-group">
+						<label>Phone Number</label>
+						<InputText @bind-Value="patientProfile.PhoneNumber" class="form-control" placeholder="(123) 456-7890" />
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+		<!-- Address -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingAddress">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAddress">
+					2. Patient Address
+				</button>
+			</h2>
+			<div id="collapseAddress" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					<label>AddressLine1</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.AddressLine1" class="form-control" placeholder="123 Main St." />
+
+					<label>Street</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.Street" class="form-control" placeholder="" />
+
+					<label>City</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.City" class="form-control" placeholder="Springfield" />
+
+					<label>State</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.State" class="form-control" placeholder="New York" />
+
+					<label>Zip Code</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.ZipCode" class="form-control" placeholder="47290" />
+
+					<label>Country</label>
+					<InputText @bind-Value="patientProfile.PatientAddress.Country" class="form-control" placeholder="United States" />
+				</div>
+			</div>
+		</div>
+
+		<!-- Emergency Contact -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingEmergency">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEmergency">
+					3. Emergency Contact
+				</button>
+			</h2>
+			<div id="collapseEmergency" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					<label>First Name</label>
+					<InputText @bind-Value="patientProfile.EmergencyContactFirstName" class="form-control" placeholder="Jane" />
+
+					<label>Last Name</label>
+					<InputText @bind-Value="patientProfile.EmergencyContactLastName" class="form-control" placeholder="Doe" />
+
+					<label>Phone Number</label>
+					<InputText @bind-Value="patientProfile.EmergencyContactPhone" class="form-control" placeholder="(123) 456-7890" />
+				</div>
+			</div>
+		</div>
+
+		<!-- Provider -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingProvider">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProvider">
+					4. Primary Care Provider
+				</button>
+			</h2>
+			<div id="collapseProvider" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					<label>First Name</label>
+					<InputText @bind-Value="patientProfile.Pcp.FirstName" class="form-control" />
+
+					<label>Last Name</label>
+					<InputText @bind-Value="patientProfile.Pcp.LastName" class="form-control" />
+
+					<label>Gender</label>
+					<InputSelect @bind-Value="patientProfile.Pcp.Gender" class="form-control">
+						<option value="">-- Select Gender --</option>
+						<option value="male">Male</option>
+						<option value="female">Female</option>
+						<option value="other">Other</option>
+						<option value="unknown">Unknown</option>
+					</InputSelect>
+
+					<label>Email</label>
+					<InputText @bind-Value="patientProfile.Pcp.Email" class="form-control" />
+
+				</div>
+			</div>
+		</div>
+
+		<!-- Insurance -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingInsurance">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInsurance">
+					5. Insurance Information
+				</button>
+			</h2>
+			<div id="collapseInsurance" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					<InputText @bind-Value="patientProfile.InsuranceProvider" class="form-control mb-2" placeholder="Insurance Provider" />
+					<InputText @bind-Value="patientProfile.PolicyNumber" class="form-control mb-2" placeholder="Policy Number" />
+				</div>
+			</div>
+		</div>
+
+		<!-- Vitals -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingVitals">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVitals">
+					6. Vitals: Height, Weight
+				</button>
+			</h2>
+			<div id="collapseVitals" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					@foreach (var vital in patientProfile.VitalSigns)
+					{
+						<div class="form-group">
+							<label>@vital.Display (@vital.Unit)</label>
+							<InputNumber @bind-Value="vital.Value" class="form-control" />
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- PastConditions -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingConditions">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConditions">
+					7. Past Conditions: Hypertension, Diabetes, Asthma etc.
+				</button>
+			</h2>
+			<div id="collapseConditions" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					@foreach (var condition in patientProfile.PastConditions)
+					{
+						<div class="form-check">
+							<InputCheckbox @bind-Value="condition.IsSelected" class="form-check-input" />
+							<label class="form-check-label">@condition.Display</label>
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- LabResults -->
+		@* <div class="accordion-item">
+			<h2 class="accordion-header" id="headingLabResults">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLabResults">
+					12. LabResults: Hemoglobin, Glucose, Cholesterol etc.
+				</button>
+			</h2>
+			<div id="collapseLabResults" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					@foreach (var labResult in patientProfile.LabResults)
+					{
+						<div class="form-group">
+							<label>@labResult.TestName (Normal Range: @labResult.NormalRange @labResult.Unit)</label>
+							<InputNumber @bind-Value="labResult.Value" class="form-control" />
+						</div>
+					}
+				</div>
+			</div>
+		</div> *@
+
+		<!-- ImagingResult -->
+		@* <div class="accordion-item">
+			<h2 class="accordion-header" id="headingImagingResult">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseImagingResult">
+					13. ImagingResults: CT Chest, MRI Brain, X-ray Chest PA and Lateral etc.
+				</button>
+			</h2>
+			<div id="collapseImagingResult" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					@foreach (var imgResult in patientProfile.ImagingResults)
+					{
+						<div class="form-group">
+							<label>@imgResult.ImagingTypeName</label>
+							<InputText @bind-Value="imgResult.ReportSummary" class="form-control" />
+						</div>
+					}
+				</div>
+			</div>
+		</div> *@
+
+		<!-- MentalHealth -->
+		@* <div class="accordion-item">
+			<h2 class="accordion-header" id="headingMentalHealth">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMentalHealth">
+					14. Mental Health Assessment: Depression screening report, Generalized Anxiety Disorder etc.
+				</button>
+			</h2>
+			<div id="collapseMentalHealth" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					@foreach (var mentalHealth in patientProfile.MentalHealthAssessments)
+					{
+						<div class="form-group">
+							<label>@mentalHealth.Display (Normal Range: @mentalHealth.NormalRange @mentalHealth.Unit)</label>
+							<InputNumber @bind-Value="mentalHealth.Score" class="form-control" />
+						</div>
+					}
+				</div>
+			</div>
+		</div> *@
+
+		<!-- SocialHistory -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingSocialHistory">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSocialHistory">
+					8. Social History: Tobacco smoking status, History of Alcohol use etc.
+				</button>
+			</h2>
+			<div id="collapseSocialHistory" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					@foreach (var socialHistory in patientProfile.SocialHistories)
+					{
+						<div class="form-group">
+							<label>@socialHistory.BehaviorName</label>
+
+							@if (socialHistory.InputType == "number")
+							{
+								<InputNumber @bind-Value="socialHistory.StatusValue" class="form-control" />
+							}
+							else if (socialHistory.InputType == "text")
+							{
+								<InputText @bind-Value="socialHistory.StatusDisplay" class="form-control" />
+							}
+							else if (socialHistory.InputType == "dropdown")
+							{
+								var socialStatusList = socialHistoryStatus.Where(ss => ss.BehaviorCode == socialHistory.BehaviorCode);
+
+								@if (socialStatusList?.Any() == true)
+								{
+									<InputSelect @bind-Value="socialHistory.StatusCode" class="form-control">
+										<option value="none">-- Select Status --</option>
+										@foreach (var socialStatus in socialStatusList)
+										{
+											<option value="@socialStatus.StatusCode">@socialStatus.StatusDisplay</option>
+										}
+									</InputSelect>
+								}
+							}
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- LifeStyles -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingLifeStyles">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLifeStyles">
+					9. LifeStyles: Dietary habits, Exercise hours per week etc.
+				</button>
+			</h2>
+			<div id="collapseLifeStyles" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					@foreach (var lifeStyle in patientProfile.LifestyleHistories)
+					{
+						<div class="form-group">
+							<label>@lifeStyle.LifestyleName</label>
+
+							@if (lifeStyle.InputType == "number")
+							{
+								<InputNumber @bind-Value="lifeStyle.StatusValue" class="form-control" />
+							}
+							else if (lifeStyle.InputType == "text")
+							{
+								<InputText @bind-Value="lifeStyle.StatusDisplay" class="form-control" />
+							}
+							else if (lifeStyle.InputType == "dropdown")
+							{
+								var socialStatuses = socialHistoryStatus.Where(ss => ss.BehaviorCode == lifeStyle.LifestyleCode);
+
+								@if (socialStatuses?.Any() == true)
+								{
+									<InputSelect @bind-Value="lifeStyle.StatusCode"
+												 class="form-control">
+										<option value="none">-- Select Status --</option>
+										@foreach (var socialStatus in socialStatuses)
+										{
+											<option value="@socialStatus.StatusCode">@socialStatus.StatusDisplay</option>
+										}
+									</InputSelect>
+								}
+							}
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- Consent -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingConsent">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConsent">
+					10. Consent Forms
+				</button>
+			</h2>
+			<div id="collapseConsent" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					<div class="form-check">
+						<InputCheckbox @bind-Value="patientProfile.ConsentTreatment" class="form-check-input" />
+						<label class="form-check-label">I consent to treatment</label>
+					</div>
+					<div class="form-check">
+						<InputCheckbox @bind-Value="patientProfile.ConsentPrivacy" class="form-check-input" />
+						<label class="form-check-label">I agree to the privacy policy</label>
+					</div>
+					<div class="form-check">
+						<InputCheckbox @bind-Value="patientProfile.ConsentBilling" class="form-check-input" />
+						<label class="form-check-label">I agree to the billing terms</label>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="d-flex flex-column flex-md-row mt-4">
+		<button type="submit" class="btn btn-primary mb-2 mb-md-0 me-md-2">Submit</button>
+		<button type="button" class="btn btn-secondary" @onclick="GenerateSummary">Download Summary</button>
+	</div>
+</EditForm>
+

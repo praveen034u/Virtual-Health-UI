@@ -1,36 +1,36 @@
-name: Deploy Blazor WASM to S3
+name: Build and Deploy Blazor WASM to S3
 
 on:
   push:
-    branches:
-      - main  # or 'master'
+    branches: [ master ]  # Trigger on pushes to main (adjust the branch as needed)
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout source code
+        uses: actions/checkout@v4
 
-    - name: Set up .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.x'
+      # Install the .NET 9 SDK (not pre-installed on GitHub runners by default)
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'  # Installs latest .NET 9 SDK so we can build net9.0 projects
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore .NET dependencies
+        run: dotnet restore Virtual-health-ui/VirtualHealth.UI.csproj
 
-    - name: Build and Publish
-      run: dotnet publish -c Release -o publish
+      - name: Publish Blazor WASM app
+        run: dotnet publish Virtual-health-ui/VirtualHealth.UI.csproj --configuration Release --output publish
 
-    - name: Upload to S3
-      uses: jakejarvis/s3-sync-action@v0.5.1
-      with:
-        args: --acl public-read --delete
-      env:
-        AWS_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
-        SOURCE_DIR: publish/wwwroot
+      # Sync the published files to the S3 bucket
+      - name: Deploy to S3 (Sync)
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}         # Your S3 bucket name (set as secret)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # AWS access key (secret)
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS secret key (secret)
+          AWS_REGION: 'us-east-1'        # (Optional) AWS region, e.g., us-east-1
+          SOURCE_DIR: 'publish/wwwroot'  # Folder to upload (the Blazor app's static files)
