@@ -1,0 +1,41 @@
+﻿/* Animations and enhancements */
+.fade-in {
+    animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-gradient {
+    background: linear-gradient(135deg, #004e92, #000428);
+}
+
+.cta-gradient {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+}
+
+.card-hover:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn-primary-custom {
+    background-color: #007bff;
+    border: none;
+    color: white;
+}
+
+    .btn-primary-custom:hover {
+        background-color: #0056b3;
+        color: white;
+    }
