@@ -1,45 +1,478 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VirtualHealth.UI</title>
-    <base href="/" />
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!--<link rel="stylesheet" href="css/app.css" sameet />--> 
-    <link rel="stylesheet" href="css/app.css" />
-    <link rel="stylesheet" href="css/site.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="VirtualHealth.UI.styles.css" rel="stylesheet" />
-    <script src="https://cdn.auth0.com/js/lock/11.30/lock.min.js"></script>
-    <script src="auth.js"></script>
-    <!--<script src="auth.js" sameet"></script>-->
-    <!--<script src="secureStorage.js"></script>-->
-    <!--<script src="auth0-login.js"></script>-->
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Virtual Health Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.1em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .metric {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+            margin: 10px 0;
+        }
+
+        .alert {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        .header-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to right, #1e90ff, #0073e6);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px; /* ✅ This adds the vertical gap */
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-circle {
+  width: 50px;
+  height: 50px;
+  background: white;
+  color: #1e90ff;
+  font-weight: bold;
+  font-size: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.user-subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #2ecc71;
+  border-radius: 50%;
+}
+
+        .chart-container {
+            height: 200px;
+            width: 100%;
+        }
+
+        .risk-level {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .risk-low {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .risk-medium {
+            background-color: #f1c40f;
+            color: white;
+        }
+
+        .risk-high {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .genomic-risk {
+            margin-top: 15px;
+        }
+
+        .genomic-risk div {
+            margin: 5px 0;
+        }
+    </style>
 </head>
-
 <body>
-    <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
-    </div>
+<div class="container">
 
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="." class="reload">Reload</a>
-        <span class="dismiss">🗙</span>
+    <div class="header-card">
+        <div class="header-left">
+          <div class="avatar-circle">SS</div>
+          <div class="user-info">
+            <div class="user-name">Virtual Health Dashboard</div>
+            <div class="user-subtitle">Real-time health metrics integrated with genomic data</div>
+          </div>
+        </div>
+        <div class="header-right">
+          <span class="status-dot"></span>
+          <span class="status-text">Monitoring Active</span>
+        </div>
+      </div>
+      
+
+<div class="dashboard-grid">
+<div class="dashboard-card">
+<div class="card-header">
+<span class="card-title">Heart Rate</span>
+<span class="risk-level" id="heartRiskLevel">Loading...</span>
+</div>
+<div class="metric" id="currentHeartRate">--</div>
+<div class="chart-container">
+<canvas id="heartRateChart"></canvas>
+</div>
+<div class="alert" id="heartRateAlert"></div>
+</div>
+<div class="dashboard-card">
+<div class="card-header">
+<span class="card-title">Blood Pressure</span>
+<span class="risk-level" id="bpRiskLevel">Loading...</span>
+</div>
+<div class="metric" id="currentBP">--/--</div>
+<div class="chart-container">
+<canvas id="bpChart"></canvas>
+</div>
+<div class="alert" id="bpAlert"></div>
+</div>
+<div class="dashboard-card">
+<div class="card-header">
+<span class="card-title">Glucose Level</span>
+<span class="risk-level" id="glucoseRiskLevel">Loading...</span>
+</div>
+<div class="metric" id="currentGlucose">--</div>
+<div class="chart-container">
+<canvas id="glucoseChart"></canvas>
+</div>
+<div class="alert" id="glucoseAlert"></div>
+</div>
+
+<div class="dashboard-card">
+<div class="card-header">
+<span class="card-title">Blood Oxygen</span>
+<span class="risk-level" id="oxygenRiskLevel">Loading...</span>
+</div>
+<div class="metric" id="currentOxygen">--%</div>
+<div class="chart-container">
+<canvas id="oxygenChart"></canvas>
+</div>
+<div class="alert" id="oxygenAlert"></div>
+</div>
+<div class="dashboard-card">
+<div class="card-header">
+<span class="card-title">Genomic Risk Assessment</span>
+</div>
+<div class="genomic-risk" id="genomicRiskData">
+<div>Loading genomic data...</div>
+</div>
+</div>
+
+<div class="dashboard-card">
+    <div class="card-header">
+      <span class="card-title">Sleep Analysis</span>
     </div>
-    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
-    <script src="_framework/blazor.webassembly.js"></script>
-    <!-- Bootstrap JS (for accordion & tooltips) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="genomic-risk">
+      <canvas id="sleepChart" style="width: 100%; height: 200px;"></canvas>
+    </div>
+  </div>  
+  
+</div>
+<script>
+        // Simulated user genomic data
+        const genomicData = {
+            cardiovascular: {
+                risk: 'medium',
+                genes: ['APOE4', 'PCSK9'],
+                description: 'Moderate genetic predisposition to cardiovascular issues'
+            },
+            diabetes: {
+                risk: 'high',
+                genes: ['TCF7L2', 'KCNJ11'],
+                description: 'Higher genetic risk for type 2 diabetes'
+            },
+            hypertension: {
+                risk: 'low',
+                genes: ['ACE', 'AGT'],
+                description: 'Lower genetic risk for hypertension'
+            }
+        };
+
+        // Chart configuration
+        function createChart(canvasId, label, color) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: label,
+                        data: [],
+                        borderColor: color,
+                        tension: 0.4,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize charts
+        const heartRateChart = createChart('heartRateChart', 'Heart Rate', '#e74c3c');
+        const bpChart = createChart('bpChart', 'Systolic BP', '#3498db');
+        const glucoseChart = createChart('glucoseChart', 'Glucose', '#2ecc71');
+        const oxygenChart = createChart('oxygenChart', 'Blood Oxygen', '#9b59b6');
+
+
+        // Updating risk level indicator
+        function updateRiskLevel(element, risk) {
+            element.className = 'risk-level risk-' + risk;
+            element.textContent = risk.toUpperCase();
+        }
+
+        // Generatin random data within normal ranges
+        function generateVitalSign(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        
+
+        // Updatin charts with new data
+        function updateCharts() {
+            const now = new Date();
+            const timeLabel = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+
+            // Heart Rate Update
+            const heartRate = generateVitalSign(60, 100);
+            document.getElementById('currentHeartRate').textContent = heartRate + ' BPM';
+            updateChartData(heartRateChart, timeLabel, heartRate);
+            updateRiskLevel(document.getElementById('heartRiskLevel'), 
+                          heartRate > 90 ? 'high' : heartRate < 70 ? 'low' : 'medium');
+
+            // Blood Pressure Update
+            const systolic = generateVitalSign(110, 140);
+            const diastolic = generateVitalSign(60, 90);
+            document.getElementById('currentBP').textContent = `${systolic}/${diastolic}`;
+            updateChartData(bpChart, timeLabel, systolic);
+            updateRiskLevel(document.getElementById('bpRiskLevel'),
+                          systolic > 130 ? 'high' : systolic < 120 ? 'low' : 'medium');
+
+            // Glucose Update
+            const glucose = generateVitalSign(80, 140);
+            document.getElementById('currentGlucose').textContent = glucose + ' mg/dL';
+            updateChartData(glucoseChart, timeLabel, glucose);
+            updateRiskLevel(document.getElementById('glucoseRiskLevel'),
+                          glucose > 120 ? 'high' : glucose < 100 ? 'low' : 'medium');
+            
+            // Blood Oxygen Update
+        const oxygen = generateVitalSign(95, 100); // realistic SpO2 range
+        document.getElementById('currentOxygen').textContent = oxygen + '%';
+        updateChartData(oxygenChart, timeLabel, oxygen);
+        updateRiskLevel(document.getElementById('oxygenRiskLevel'),
+                    oxygen < 95 ? 'high' : oxygen > 97 ? 'low' : 'medium');
+
+
+            // Check for alerts
+            checkAlerts(heartRate, systolic, glucose);
+        }
+
+        // Updating chart data
+        function updateChartData(chart, label, value) {
+            if (chart.data.labels.length > 10) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+            
+            chart.data.labels.push(label);
+            chart.data.datasets[0].data.push(value);
+            chart.update();
+        }
+
+        // Checkin health alerts
+        function checkAlerts(heartRate, systolic, glucose) {
+            // Heart Rate Alert
+            const heartAlert = document.getElementById('heartRateAlert');
+            if (heartRate > 90 && genomicData.cardiovascular.risk === 'high') {
+                heartAlert.style.display = 'block';
+                heartAlert.textContent = 'Warning: Elevated heart rate with genetic predisposition';
+            } else {
+                heartAlert.style.display = 'none';
+            }
+
+            // Blood Pressure Alert
+            const bpAlert = document.getElementById('bpAlert');
+            if (systolic > 130 && genomicData.hypertension.risk === 'high') {
+                bpAlert.style.display = 'block';
+                bpAlert.textContent = 'Warning: Elevated blood pressure with genetic risk';
+            } else {
+                bpAlert.style.display = 'none';
+            }
+
+            // Glucose Alert
+            const glucoseAlert = document.getElementById('glucoseAlert');
+            if (glucose > 120 && genomicData.diabetes.risk === 'high') {
+                glucoseAlert.style.display = 'block';
+                glucoseAlert.textContent = 'Warning: Elevated glucose with genetic predisposition to diabetes';
+            } else {
+                glucoseAlert.style.display = 'none';
+            }
+        }
+        
+
+        // Displaying genomic risk data
+        function displayGenomicData() {
+            const container = document.getElementById('genomicRiskData');
+            container.innerHTML = '';
+
+            for (const [condition, data] of Object.entries(genomicData)) {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <strong>${condition.charAt(0).toUpperCase() + condition.slice(1)}</strong>
+                    <span class="risk-level risk-${data.risk}">${data.risk.toUpperCase()}</span>
+                    <p>Genes: ${data.genes.join(', ')}</p>
+                    <p>${data.description}</p>
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Initializing the dashboard
+        displayGenomicData();
+        updateCharts();
+        setInterval(updateCharts, 2000);
+        
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const ctx = document.getElementById('sleepChart').getContext('2d');
+    
+      const sleepChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            label: 'Hours of Sleep',
+            data: [6, 7.8, 4.7, 9, 5, 6.8, 6.1],
+            backgroundColor: [
+              '#f1c40f', '#2ecc71', '#e74c3c', '#2ecc71', '#e74c3c', '#2ecc71', '#f1c40f'
+            ],
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: false,
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 10,
+              ticks: {
+                stepSize: 2
+              }
+            }
+          }
+        }
+      });
+    </script>
+    
 </body>
-
 </html>
