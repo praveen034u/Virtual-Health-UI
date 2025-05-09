@@ -128,7 +128,7 @@
             if (!response.IsSuccessStatusCode)
             {
                Console.WriteLine("Profile not found, redirecting to Create Profile.");
-                _navigationManager.NavigateTo("/user-profile/create", forceLoad: true);
+                _navigationManager.NavigateTo("/user-profile", forceLoad: true);
                return;
             }
 
