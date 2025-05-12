@@ -1,4 +1,5 @@
-﻿using Microsoft.JSInterop;
+﻿using Blazorise;
+using Microsoft.JSInterop;
 using VirtualHealth.UI.Models;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -15,7 +16,6 @@ public partial class CreateProfile
     protected override async Task OnInitializedAsync()
     {
         email = await SecureStorage.GetUserIdAsync();
-
         patientProfile.Email = email;
         await LoadInitialData();
 
@@ -59,7 +59,7 @@ public partial class CreateProfile
             if (match != null)
             {
                 lifeStyle.StatusDisplay = match.StatusDisplay;
-                lifeStyle.Detail = match.StatusDisplay;
+                //lifeStyle.Detail = match.StatusDisplay;
             }
             else
                 lifeStyle.StatusCode = string.Empty;
@@ -69,11 +69,18 @@ public partial class CreateProfile
             .ForEach(sh =>
             {
                 sh.StatusDisplay = sh.StatusValue?.ToString();
-                sh.Detail = sh.StatusValue?.ToString();
+                //sh.Detail = sh.StatusValue?.ToString();
             });
 
-        var patientId = await MedplumService.CreatePatientFullProfileAsync(patientProfile);
-        await JS.InvokeVoidAsync("alert", patientId); //"Profile submitted successfully!"
+        string patientId = string.Empty;
+        if (string.IsNullOrEmpty(patientProfile.PatientId))
+            patientId = await MedplumService.CreatePatientFullProfileAsync(patientProfile);
+        else
+            patientId = await MedplumService.UpdatePatientFullProfileAsync(patientProfile);
+
+        await JS.InvokeVoidAsync("alert", "Profile submitted successfully!"); //"Profile submitted successfully!"
+
+        StateHasChanged(); // 🔄 Force re-render
     }
 
     private async Task GenerateSummary()
@@ -119,8 +126,11 @@ public partial class CreateProfile
         patientProfile.InsuranceProvider = profile.InsuranceProvider ?? string.Empty;
         patientProfile.PolicyNumber = profile.PolicyNumber ?? string.Empty;
 
+        patientProfile.Pcp.PractitionerId = profile.Pcp?.PractitionerId ?? string.Empty;
+        patientProfile.Pcp.PractitionerName = profile.Pcp?.PractitionerName ?? string.Empty;
         patientProfile.Pcp.FirstName = profile.Pcp?.FirstName ?? string.Empty;
         patientProfile.Pcp.LastName = profile.Pcp?.LastName ?? string.Empty;
+        patientProfile.Pcp.Gender = profile.Pcp?.Gender ?? string.Empty;
         patientProfile.Pcp.Email = profile.Pcp?.Email ?? string.Empty;
 
         patientProfile.ConsentTreatment = profile.ConsentTreatment;
@@ -130,9 +140,11 @@ public partial class CreateProfile
         // Update matching PastConditions from Saved data
         foreach (var updated in profile.PastConditions)
         {
-            var existing = patientProfile.PastConditions.FirstOrDefault(c => c.Code == updated.Code);
+            var existing = patientProfile.PastConditions.FirstOrDefault(c => 
+                (c.Code == updated.Code || c.Display == updated.Display));
             if (existing != null)
             {
+                existing.Id = updated.Id;
                 existing.IsSelected = true;
             }
         }
@@ -140,12 +152,14 @@ public partial class CreateProfile
         // Update matching Vitals from Saved data
         foreach (var updated in profile.VitalSigns)
         {
-            var existing = patientProfile.VitalSigns.FirstOrDefault(v => v.Code == updated.Code);
+            var existing = patientProfile.VitalSigns.FirstOrDefault(v => 
+                (v.Code == updated.Code || v.Display == updated.Display));
             if (existing != null)
             {
+                existing.Id = updated.Id;
                 existing.Value = updated.Value;
-                existing.Unit = updated.Unit;
-                existing.Timestamp = updated.Timestamp;
+                //existing.Unit = updated.Unit;
+                //existing.Timestamp = updated.Timestamp;
             }
         }
 
@@ -153,10 +167,11 @@ public partial class CreateProfile
         foreach (var updated in profile.SocialHistories)
         {
             var existing = patientProfile.SocialHistories.FirstOrDefault(s =>
-                s.BehaviorCode == updated.BehaviorCode);
+                (s.BehaviorCode == updated.BehaviorCode || s.BehaviorName == updated.BehaviorName));
 
             if (existing != null)
             {
+                existing.Id = updated.Id;
                 if (existing.InputType == "number")
                 {
                     existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
@@ -175,12 +190,13 @@ public partial class CreateProfile
         foreach (var updated in profile.LifestyleHistories)
         {
             var existing = patientProfile.LifestyleHistories.FirstOrDefault(s =>
-                s.LifestyleCode == updated.LifestyleCode);
+                (s.LifestyleCode == updated.LifestyleCode || s.LifestyleName == updated.LifestyleName));
 
             if (existing != null)
             {
-                if (string.IsNullOrEmpty(existing.Detail))
-                {
+                existing.Id = updated.Id;
+                //if (string.IsNullOrEmpty(existing.Detail))
+                //{
                     if (existing.InputType == "number")
                     {
                         existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
@@ -191,20 +207,20 @@ public partial class CreateProfile
                         existing.StatusCode = updated.StatusCode ?? string.Empty;
                         existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
                     }
-                }
-                else
-                {
-                    if (existing.InputType == "number")
-                    {
-                        existing.StatusDisplay = updated.Detail;
-                        existing.StatusValue = Convert.ToInt32(updated.Detail);
-                    }
-                    else
-                    {
-                        existing.StatusCode = updated.Detail?.ToLower();
-                        existing.StatusDisplay = updated.Detail;
-                    }
-                }
+                //}
+                //else
+                //{
+                //    if (existing.InputType == "number")
+                //    {
+                //        existing.StatusDisplay = updated.Detail;
+                //        existing.StatusValue = Convert.ToInt32(updated.Detail);
+                //    }
+                //    else
+                //    {
+                //        existing.StatusCode = updated.Detail?.ToLower();
+                //        existing.StatusDisplay = updated.Detail;
+                //    }
+                //}
             }
         }
     }

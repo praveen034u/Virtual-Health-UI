@@ -136,7 +136,8 @@
         var encodedEmail = Uri.EscapeDataString(userId);
 
         Console.WriteLine("Unknown role, redirecting to Create Profile.");
-        _navigationManager.NavigateTo("/dashboard/" + encodedEmail.Replace(".com", ""), forceLoad: true);
+        _navigationManager.NavigateTo("/create-profile", forceLoad: true);
+        //_navigationManager.NavigateTo("/dashboard/" + encodedEmail.Replace(".com", ""), forceLoad: true);
            
     }
 
