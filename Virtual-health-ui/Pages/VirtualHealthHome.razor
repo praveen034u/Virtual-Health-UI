@@ -9,42 +9,41 @@
 
 <div class="container-fluid">
     <!-- Hero Section -->
-    <section class="text-center bg-dark text-white py-5">
+    <section class="text-center text-white py-5 hero-gradient">
         <div class="container">
             <h1 class="display-4 fw-bold">Welcome to Your Health Assistant</h1>
             <p class="lead">Track your vitals and stay healthy with real-time insights.</p>
-            <button @onclick="ShowLoginWidget" class="btn btn-light btn-lg mt-3">Get Started</button>
+            <button @onclick="ShowLoginWidget" class="btn btn-light btn-lg mt-3 text-primary fw-semibold">
+                Get Started
+            </button>
         </div>
     </section>
 
-    <!-- Auth0 Login Widget Container -->
-    <section class="py-5 text-center">
-        <div id="auth0-login-container"></div>
-    </section>
+   
 
     <!-- Features Section -->
-    <section class="py-5">
+    <section class="py-5 fade-in">
         <div class="container">
-            <h2 class="text-center mb-4 text-dark">Why Choose VirtualHealth?</h2>
+            <h2 class="text-center mb-4 text-primary">Why Choose VirtualHealth?</h2>
             <div class="row">
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm border-0">
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center shadow-sm border-0 card-hover">
                         <div class="card-body">
-                            <h3 class="card-title text-primary">360° Health Insights</h3>
+                            <h3 class="card-title text-info">360° Health Insights</h3>
                             <p class="card-text">Get a unified view of your health with data from wearables, hospitals, and pharmacies.</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm border-0">
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center shadow-sm border-0 card-hover">
                         <div class="card-body">
                             <h3 class="card-title text-success">AI Health Companion</h3>
                             <p class="card-text">Personalized recommendations, early risk alerts, and prescription assistance powered by Gen AI.</p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm border-0">
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center shadow-sm border-0 card-hover">
                         <div class="card-body">
                             <h3 class="card-title text-warning">Smart Monitoring & Reminders</h3>
                             <p class="card-text">Real-time vitals monitoring with smart medication reminders and emergency alerts.</p>
@@ -55,15 +54,20 @@
         </div>
     </section>
 
+
     <!-- Call-to-Action Section -->
-    <section class="text-center bg-secondary text-white py-5">
+    <section class="text-center text-white py-5 cta-gradient fade-in">
         <h2 class="fw-bold">Take Control of Your Health Today!</h2>
         <p class="lead mt-2">Join VirtualHealth and get real-time insights, AI guidance, and personalized care at your fingertips.</p>
-        <button @onclick="ShowLoginWidget" class="btn btn-light btn-lg mt-3 text-dark fw-semibold">
+        <button @onclick="ShowLoginWidget" class="btn btn-light btn-lg mt-3 text-primary fw-semibold">
             Get Started
         </button>
     </section>
-</div>
+    <!-- Auth0 Login Widget Container -->
+    <section class="py-5 text-center fade-in">
+        <div id="auth0-login-container"></div>
+    </section>
+    </div>
 
 @code {
 
@@ -74,10 +78,12 @@
 
     protected override void OnInitialized()
     {
+       
         _navigationManager = Navigation;
         _secureStorage = SecureStorage;
         _jsRuntime = JSRuntime;
         _httpClient = MedPlumHttpClient.Client;
+     
     }
 
     private async Task ShowLoginWidget()
@@ -114,30 +120,27 @@
         // Check profile from API
         //httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        var response = await _httpClient.GetAsync($"/api/Medplum/patient-full-profile/{userId}");
-        if (!response.IsSuccessStatusCode)
-        {
-            Console.WriteLine("Profile not found, redirecting to Create Profile.");
-            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
-            return;
+        var patientId = await _secureStorage.GetItemAsync("vh_patient_id");
+
+		if (string.IsNullOrEmpty(patientId))
+		{
+		    var response = await _httpClient.GetAsync($"/api/Medplum/patient-full-profile/{userId}");
+            if (!response.IsSuccessStatusCode)
+            {
+               Console.WriteLine("Profile not found, redirecting to Create Profile.");
+                _navigationManager.NavigateTo("/user-profile", forceLoad: true);
+               return;
+            }
+
+           var profileJsonData = await response.Content.ReadAsStringAsync();
+           var profile = await _secureStorage.GetUserProfileAsync(profileJsonData);
+        
+           await _secureStorage.SetItemAsync("vh_patient_id", profile.PatientId);
         }
 
-        var profileJsonData = await response.Content.ReadAsStringAsync();
-        var profile = await _secureStorage.GetUserProfileAsync(profileJsonData);
-
-        if (profile == null)
-        {
-            Console.WriteLine("Invalid profile response, redirecting to Create Profile.");
-            _navigationManager.NavigateTo("/create-profile", forceLoad: true);
-            return;
-        }
-        _secureStorage.SetItemAsync("sb_user_profile", profileJsonData);
-
-        var encodedEmail = Uri.EscapeDataString(userId);
 
         Console.WriteLine("Unknown role, redirecting to Create Profile.");
-        _navigationManager.NavigateTo("/create-profile", forceLoad: true);
-        //_navigationManager.NavigateTo("/dashboard/" + encodedEmail.Replace(".com", ""), forceLoad: true);
+        _navigationManager.NavigateTo("/dashboard", forceLoad: true);
            
     }
 

@@ -9,7 +9,7 @@
         <button class="nav-link btn btn-link" @onclick="BeginLogOut">Log out</button>
     </Authorized>
     <NotAuthorized>
-        <VirtualHealthHome />
+        @* <VirtualHealthHome /> *@
     </NotAuthorized>
 </AuthorizeView>
 
@@ -18,7 +18,7 @@
     private async Task BeginLogOut()
     {
         var auth0Domain = "dev-jbrriuc5vyjmiwtx.us.auth0.com";
-        var clientId = "EOMCZTuZXxjFh6iWbQRxZANCslzTncYl";
+        var clientId = "V9Una2guriD6USXmVHCn4LVRZX9Ao479";
         var returnUrl = Navigation.BaseUri; // Ensures return to home after logout
 
         var logoutUrl = $"https://{auth0Domain}/v2/logout?client_id={clientId}&returnTo={Uri.EscapeDataString(returnUrl)}";

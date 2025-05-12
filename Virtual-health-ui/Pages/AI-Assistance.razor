@@ -1,0 +1,98 @@
+﻿@page "/ai-assistance"
+
+@inject HttpClient Http
+@using System.Net.Http.Json
+
+<h3 class="text-center text-primary my-4">Ask Your AI Health Assistant</h3>
+<div class="container">
+    <!-- Prompt Input -->
+    <div class="mb-3">
+        <label for="userPrompt" class="form-label fw-bold">Your Health Question</label>
+        <textarea id="userPrompt" class="form-control shadow-sm" @bind="userPrompt" rows="3"
+                  placeholder="Ask something like: How is my sleep quality lately?"></textarea>
+    </div>
+    <div class="d-grid d-sm-flex justify-content-sm-end">
+        <button class="btn btn-primary px-4 py-2" @onclick="SubmitPrompt" disabled="@isLoading">
+            @if (isLoading)
+            {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span class="ms-2">Thinking...</span>
+            }
+            else
+            {
+                <span>Ask AI</span>
+            }
+        </button>
+    </div>
+
+    <!-- Predefined Prompts -->
+    <div class="mt-4">
+        <h5>Quick Questions</h5>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var prompt in predefinedPrompts)
+            {
+                <button class="btn btn-outline-secondary rounded-pill shadow-sm px-3 py-1"
+                        @onclick="@(() => SetPrompt(prompt))">
+                    @prompt
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- AI Response Section -->
+    @if (!string.IsNullOrWhiteSpace(aiResponse))
+    {
+        <div class="mt-4 p-4 border rounded bg-light fade-in">
+            <h5 class="text-success">AI Response:</h5>
+            <p class="mb-0">@aiResponse</p>
+        </div>
+    }
+</div>
+
+@code {
+    private string userPrompt = string.Empty;
+    private string aiResponse = string.Empty;
+    private bool isLoading = false;
+
+    private List<string> predefinedPrompts = new()
+    {
+        "How is my blood pressure trend?",
+        "Am I getting enough quality sleep?",
+        "What can I do to reduce stress?",
+        "How many steps should I take daily?",
+        "Should I be concerned about my heart rate?"
+    };
+
+    private void SetPrompt(string prompt)
+    {
+        userPrompt = prompt;
+        aiResponse = string.Empty;
+    }
+
+    private async Task SubmitPrompt()
+    {
+        if (string.IsNullOrWhiteSpace(userPrompt))
+            return;
+
+        isLoading = true;
+        aiResponse = string.Empty;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/ai-assistance", new { input = userPrompt });
+            var result = await response.Content.ReadFromJsonAsync<AIResponse>();
+            aiResponse = result?.Response ?? "No response received from AI.";
+        }
+        catch (Exception ex)
+        {
+            aiResponse = $"Error: {ex.Message}";
+        }
+
+        isLoading = false;
+    }
+
+    public class AIResponse
+    {
+        public string Response { get; set; } = string.Empty;
+    }
+}
