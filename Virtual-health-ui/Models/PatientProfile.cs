@@ -26,7 +26,7 @@ public class PatientProfile
     public string EmergencyContactPhone { get; set; } = string.Empty;
 
     public PractitionerInput Pcp { get; set; } = new();
-    
+
     public string InsuranceProvider { get; set; } = string.Empty;
     public string PolicyNumber { get; set; } = string.Empty;
 
@@ -64,6 +64,7 @@ public class PatientAddressInput
 
 public class ConditionInput
 {
+    public string Id { get; set; } = string.Empty;
     public string Code { get; set; } = default!;
     public string Display { get; set; } = default!;
     public bool IsSelected { get; set; } = false; // For checkbox binding
@@ -71,9 +72,10 @@ public class ConditionInput
 
 public class VitalSignsInput
 {
+    public string Id { get; set; } = string.Empty;
     public string Code { get; set; } = default!;
     public string Display { get; set; } = default!;
-    public double? Value { get; set; }
+    public decimal? Value { get; set; }
     public string Unit { get; set; } = default!;
     public DateTime Timestamp { get; set; }
 }
@@ -96,6 +98,7 @@ public class ImagingResultInput
 
 public class SocialHistoryInput
 {
+    public string Id { get; set; } = string.Empty;
     public string BehaviorCode { get; set; }  // SNOMED/LOINC code (e.g., Smoking, Alcohol Use)
     public string BehaviorName { get; set; }
     public string InputType { get; set; } //number, text, dropdown, check
@@ -106,6 +109,7 @@ public class SocialHistoryInput
 
 public class LifeStyleInput
 {
+    public string Id { get; set; } = string.Empty;
     public string LifestyleCode { get; set; }  // SNOMED/LOINC code (e.g., Smoking, Alcohol Use)
     public string LifestyleName { get; set; }
     public string InputType { get; set; } //number, text, dropdown, check
@@ -113,7 +117,7 @@ public class LifeStyleInput
     public string? StatusDisplay { get; set; }
     public int? StatusValue { get; set; }
 
-    public string? Detail { get; set; }            // e.g., Exercises 3 times/week
+    //public string? Detail { get; set; }            // e.g., Exercises 3 times/week
 }
 
 public class SocialHistoryStatusInput
@@ -123,7 +127,6 @@ public class SocialHistoryStatusInput
     public string StatusDisplay { get; set; }
     public bool IsSelected { get; set; } = false;
 }
-
 public class MentalHealthInput
 {
     public string Code { get; set; }  // PHQ-9 question code or similar

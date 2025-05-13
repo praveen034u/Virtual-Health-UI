@@ -325,8 +325,7 @@
 
 								@if (socialStatuses?.Any() == true)
 								{
-									<InputSelect @bind-Value="lifeStyle.StatusCode"
-												 class="form-control">
+									<InputSelect @bind-Value="lifeStyle.StatusCode" class="form-control">
 										<option value="none">-- Select Status --</option>
 										@foreach (var socialStatus in socialStatuses)
 										{
@@ -372,4 +371,3 @@
 		<button type="button" class="btn btn-secondary" @onclick="GenerateSummary">Download Summary</button>
 	</div>
 </EditForm>
-
