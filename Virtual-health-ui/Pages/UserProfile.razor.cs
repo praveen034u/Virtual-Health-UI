@@ -32,55 +32,63 @@ public partial class UserProfile
 
     private async Task HandleValidSubmit()
     {
-        patientProfile.PatientName = (patientProfile.FirstName + " " + patientProfile.LastName).Trim();
-        patientProfile.Pcp.PractitionerName = (patientProfile.Pcp?.FirstName ?? string.Empty + " " + patientProfile.Pcp?.LastName ?? string.Empty).Trim();
-
-        patientProfile.PastConditions.RemoveAll(c => !c.IsSelected);
-
-        foreach (var history in patientProfile.SocialHistories.Where(sh => !string.IsNullOrEmpty(sh.StatusCode)))
+        try
         {
-            var match = socialHistoryStatus
-                .FirstOrDefault(s => s.BehaviorCode == history.BehaviorCode && s.StatusCode == history.StatusCode);
+            patientProfile.PatientName = (patientProfile.FirstName + " " + patientProfile.LastName).Trim();
+            patientProfile.Pcp.PractitionerName = (patientProfile.Pcp?.FirstName ?? string.Empty + " " + patientProfile.Pcp?.LastName ?? string.Empty).Trim();
 
-            if (match != null)
-                history.StatusDisplay = match.StatusDisplay;
-            else
-                history.StatusCode = string.Empty;
-        }
-        patientProfile.SocialHistories
-            .Where(sh => sh.StatusValue != null).ToList()
-            .ForEach(sh => sh.StatusDisplay = sh.StatusValue?.ToString());
+            patientProfile.PastConditions.RemoveAll(c => !c.IsSelected);
 
-        foreach (var lifeStyle in patientProfile.LifestyleHistories.Where(sh => !string.IsNullOrEmpty(sh.StatusCode)))
-        {
-            var match = socialHistoryStatus
-                .FirstOrDefault(s => s.BehaviorCode == lifeStyle.LifestyleCode && s.StatusCode == lifeStyle.StatusCode);
-
-            if (match != null)
+            foreach (var history in patientProfile.SocialHistories.Where(sh => !string.IsNullOrEmpty(sh.StatusCode)))
             {
-                lifeStyle.StatusDisplay = match.StatusDisplay;
-                //lifeStyle.Detail = match.StatusDisplay;
+                var match = socialHistoryStatus
+                    .FirstOrDefault(s => s.BehaviorCode == history.BehaviorCode && s.StatusCode == history.StatusCode);
+
+                if (match != null)
+                    history.StatusDisplay = match.StatusDisplay;
+                else
+                    history.StatusCode = string.Empty;
             }
-            else
-                lifeStyle.StatusCode = string.Empty;
-        }
-        patientProfile.LifestyleHistories
-            .Where(sh => sh.StatusValue != null).ToList()
-            .ForEach(sh =>
+            patientProfile.SocialHistories
+                .Where(sh => sh.StatusValue != null).ToList()
+                .ForEach(sh => sh.StatusDisplay = sh.StatusValue?.ToString());
+
+            foreach (var lifeStyle in patientProfile.LifestyleHistories.Where(sh => !string.IsNullOrEmpty(sh.StatusCode)))
             {
-                sh.StatusDisplay = sh.StatusValue?.ToString();
-                //sh.Detail = sh.StatusValue?.ToString();
-            });
+                var match = socialHistoryStatus
+                    .FirstOrDefault(s => s.BehaviorCode == lifeStyle.LifestyleCode && s.StatusCode == lifeStyle.StatusCode);
 
-        string patientId = string.Empty;
-        if (string.IsNullOrEmpty(patientProfile.PatientId))
-            patientId = await MedplumService.CreatePatientFullProfileAsync(patientProfile);
-        else
-            patientId = await MedplumService.UpdatePatientFullProfileAsync(patientProfile);
+                if (match != null)
+                {
+                    lifeStyle.StatusDisplay = match.StatusDisplay;
+                    //lifeStyle.Detail = match.StatusDisplay;
+                }
+                else
+                    lifeStyle.StatusCode = string.Empty;
+            }
+            patientProfile.LifestyleHistories
+                .Where(sh => sh.StatusValue != null).ToList()
+                .ForEach(sh =>
+                {
+                    sh.StatusDisplay = sh.StatusValue?.ToString();
+                    //sh.Detail = sh.StatusValue?.ToString();
+                });
 
-        await JS.InvokeVoidAsync("alert", "Profile submitted successfully!"); //"Profile submitted successfully!"
+            string patientId = string.Empty;
+            if (string.IsNullOrEmpty(patientProfile.PatientId))
+                patientId = await MedplumService.CreatePatientFullProfileAsync(patientProfile);
+            else
+                patientId = await MedplumService.UpdatePatientFullProfileAsync(patientProfile);
 
-        StateHasChanged(); // 🔄 Force re-render
+            if (!string.IsNullOrEmpty(patientId))
+                await JS.InvokeVoidAsync("alert", "Profile submitted successfully!"); //"Profile submitted successfully!"
+
+            StateHasChanged(); // 🔄 Force re-render
+        }
+        catch (Exception ex) 
+        {
+            await JS.InvokeVoidAsync("alert", "Error occured while submitting profile. Try after sometime or contact admin.");
+        }
     }
 
     private async Task GenerateSummary()
@@ -140,7 +148,7 @@ public partial class UserProfile
         // Update matching PastConditions from Saved data
         foreach (var updated in profile.PastConditions)
         {
-            var existing = patientProfile.PastConditions.FirstOrDefault(c => 
+            var existing = patientProfile.PastConditions.FirstOrDefault(c =>
                 (c.Code == updated.Code || c.Display == updated.Display));
             if (existing != null)
             {
@@ -152,7 +160,7 @@ public partial class UserProfile
         // Update matching Vitals from Saved data
         foreach (var updated in profile.VitalSigns)
         {
-            var existing = patientProfile.VitalSigns.FirstOrDefault(v => 
+            var existing = patientProfile.VitalSigns.FirstOrDefault(v =>
                 (v.Code == updated.Code || v.Display == updated.Display));
             if (existing != null)
             {
@@ -197,16 +205,16 @@ public partial class UserProfile
                 existing.Id = updated.Id;
                 //if (string.IsNullOrEmpty(existing.Detail))
                 //{
-                    if (existing.InputType == "number")
-                    {
-                        existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
-                        existing.StatusValue = Convert.ToInt32(updated.StatusDisplay ?? string.Empty);
-                    }
-                    else
-                    {
-                        existing.StatusCode = updated.StatusCode ?? string.Empty;
-                        existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
-                    }
+                if (existing.InputType == "number")
+                {
+                    existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
+                    existing.StatusValue = Convert.ToInt32(updated.StatusDisplay ?? string.Empty);
+                }
+                else
+                {
+                    existing.StatusCode = updated.StatusCode ?? string.Empty;
+                    existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
+                }
                 //}
                 //else
                 //{
