@@ -44,6 +44,7 @@ public partial class UserProfile
                 var match = socialHistoryStatus
                     .FirstOrDefault(s => s.BehaviorCode == history.BehaviorCode && s.StatusCode == history.StatusCode);
 
+
                 if (match != null)
                     history.StatusDisplay = match.StatusDisplay;
                 else
@@ -52,6 +53,17 @@ public partial class UserProfile
             patientProfile.SocialHistories
                 .Where(sh => sh.StatusValue != null).ToList()
                 .ForEach(sh => sh.StatusDisplay = sh.StatusValue?.ToString());
+
+
+                if (match != null)
+                    history.StatusDisplay = match.StatusDisplay;
+                else
+                    history.StatusCode = string.Empty;
+            }
+            patientProfile.SocialHistories
+                .Where(sh => sh.StatusValue != null).ToList()
+                .ForEach(sh => sh.StatusDisplay = sh.StatusValue?.ToString());
+
 
             foreach (var lifeStyle in patientProfile.LifestyleHistories.Where(sh => !string.IsNullOrEmpty(sh.StatusCode)))
             {
@@ -80,12 +92,21 @@ public partial class UserProfile
             else
                 patientId = await MedplumService.UpdatePatientFullProfileAsync(patientProfile);
 
+
             if (!string.IsNullOrEmpty(patientId))
                 await JS.InvokeVoidAsync("alert", "Profile submitted successfully!"); //"Profile submitted successfully!"
 
             StateHasChanged(); // 🔄 Force re-render
         }
         catch (Exception ex) 
+
+
+            if (!string.IsNullOrEmpty(patientId))
+                await JS.InvokeVoidAsync("alert", "Profile submitted successfully!"); //"Profile submitted successfully!"
+
+            StateHasChanged(); // 🔄 Force re-render
+        }
+        catch (Exception ex)
         {
             await JS.InvokeVoidAsync("alert", "Error occured while submitting profile. Try after sometime or contact admin.");
         }

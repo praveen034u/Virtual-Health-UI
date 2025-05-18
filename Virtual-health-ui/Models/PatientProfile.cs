@@ -26,7 +26,7 @@ public class PatientProfile
     public string EmergencyContactPhone { get; set; } = string.Empty;
 
     public PractitionerInput Pcp { get; set; } = new();
-    
+
     public string InsuranceProvider { get; set; } = string.Empty;
     public string PolicyNumber { get; set; } = string.Empty;
 
@@ -127,7 +127,6 @@ public class SocialHistoryStatusInput
     public string StatusDisplay { get; set; }
     public bool IsSelected { get; set; } = false;
 }
-
 public class MentalHealthInput
 {
     public string Code { get; set; }  // PHQ-9 question code or similar
