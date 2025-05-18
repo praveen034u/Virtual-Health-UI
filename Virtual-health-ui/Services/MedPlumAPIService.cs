@@ -86,7 +86,7 @@ public class MedPlumAPIService
         {
             var jsonProfile = JsonSerializer.Serialize(profile);
             var response = await _httpClient.PostAsync(apiUrl, new StringContent(jsonProfile, Encoding.UTF8, "application/fhir+json"));
-
+            
             if (response.IsSuccessStatusCode)
             {
                 var patientId = await response.Content.ReadAsStringAsync();
@@ -102,8 +102,22 @@ public class MedPlumAPIService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception: {ex.Message}");
-            return string.Empty;
+            var jsonProfile = JsonSerializer.Serialize(profile);
+            var response = await _httpClient.PostAsync(apiUrl, new StringContent(jsonProfile, Encoding.UTF8, "application/fhir+json"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                var patientId = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(patientId);
+                return patientId;
+            }
+            else
+            {
+                // Handle error case
+                Console.WriteLine($"Error: {response.StatusCode}");
+                return string.Empty;
+            }
         }
+        
     }
 }

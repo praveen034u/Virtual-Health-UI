@@ -2,6 +2,254 @@
 
 <h3>VirtualAI_HealthPrediction</h3>
 
-@code {
+@using System.Net.Http.Json
+@using Microsoft.JSInterop
+@inject HttpClient Http
+@inject IJSRuntime JS
+@implements IDisposable
 
+<h3 class="my-4">Live Heart Rate,SpO₂ (Last 30 Min) &amp; Sleep Overview</h3>
+
+@if (alertMessage is not null)
+{
+    <div class="alert @alertClass alert-dismissible fade show" role="alert">
+        @alertMessage
+        <button type="button" class="btn-close" aria-label="Close" @onclick="() => alertMessage = null"></button>
+    </div>
+}
+
+<!--<h3 class="my-4">Vitals &amp; Sleep Overview</h3>-->
+
+<div class="row gx-4 gy-4">
+    <!-- Heart Rate Card -->
+    <div class="col-md-4 d-flex">
+        <div class="card chart-card flex-fill d-flex flex-column">
+            <div class="card-header">❤️ Heart Rate (bpm)</div>
+            <div class="card-body flex-fill position-relative">
+                @if (isLoading)
+                {
+                    <div class="chart-overlay">
+                        <div class="spinner-border text-danger" role="status"></div>
+                    </div>
+                }
+                <canvas id="hrCanvas"></canvas>
+            </div>
+            <div class="card-footer text-muted small">
+                Last updated: @lastUpdated
+            </div>
+        </div>
+    </div>
+
+    <!-- SpO₂ Card -->
+    <div class="col-md-4 d-flex">
+        <div class="card chart-card flex-fill d-flex flex-column">
+            <div class="card-header">🩸 SpO₂ (%)</div>
+            <div class="card-body flex-fill position-relative">
+                @if (isLoading)
+                {
+                    <div class="chart-overlay">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                }
+                <canvas id="spo2Canvas"></canvas>
+            </div>
+            <div class="card-footer text-muted small">
+                Last updated: @lastUpdated
+            </div>
+        </div>
+    </div>
+
+    <!-- Sleep Card -->
+    <div class="col-md-4 d-flex">
+        <div class="card chart-card flex-fill d-flex flex-column">
+            <div class="card-header">🌙 Sleep (Last 7 Days)</div>
+            <div class="card-body flex-fill position-relative">
+                @if (sleepLoading)
+                {
+                    <div class="chart-overlay">
+                        <div class="spinner-border text-secondary" role="status"></div>
+                    </div>
+                }
+                <canvas id="sleepCanvas"></canvas>
+            </div>
+            <div class="card-footer text-muted small">
+                &nbsp; <!-- blank to match other footers -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // ── Vitals State ───────────────────────────────────────────────────────────────
+    private bool isLoading = true;
+    private string lastUpdated = "--:--:--";
+    private string? alertMessage;
+    private string alertClass = "alert-warning";
+    private const string hrKey = "hrCanvas";
+    private const string spo2Key = "spo2Canvas";
+
+    // ── Sleep State ────────────────────────────────────────────────────────────────
+    private bool sleepLoading;
+    private const string sleepKey = "sleepCanvas";
+
+    private System.Timers.Timer? timer;
+
+    // ── API URLs ──────────────────────────────────────────────────────────────────
+    private readonly string vitalsApiUrl =
+      "https://localhost:7195/api/vitals/01969d19-eb2d-76df-ae3c-aac3f174667b?durationMinutes=30";
+
+    private readonly string sleepApiUrl =
+      "https://localhost:7195/api/Medplum/vitals-trend/01969d19-eb2d-76df-ae3c-aac3f174667b";
+
+    // ── Initialize Charts & Poll ──────────────────────────────────────────────────
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        // Initialize empty vitals line charts
+        await JS.InvokeVoidAsync("vitalsCharts.createStatic", hrKey, "Heart Rate (bpm)", "#e74c3c", new string[0], new double[0]);
+        await JS.InvokeVoidAsync("vitalsCharts.createStatic", spo2Key, "SpO₂ (%)", "#3498db", new string[0], new double[0]);
+
+        // Initialize empty sleep grouped bar
+        await JS.InvokeVoidAsync("vitalsCharts.createMultiBar", sleepKey, new string[0], new object[0]);
+
+        // Start vitals polling every 10s
+        timer = new System.Timers.Timer(10_000);
+        timer.Elapsed += async (_, __) => await RefreshVitalsAsync();
+        timer.Start();
+
+        // First data load
+        await RefreshVitalsAsync();
+        await LoadSleepAsync();
+    }
+
+    // ── Fetch & Render Vitals ─────────────────────────────────────────────────────
+    private async Task RefreshVitalsAsync()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var readings = await Http.GetFromJsonAsync<List<VitalsReading>>(vitalsApiUrl) ?? new();
+        if (readings.Count > 180)
+            readings = readings.Skip(readings.Count - 180).ToList();
+
+        // Alert logic
+        var latest = readings.LastOrDefault();
+        if (latest != null)
+        {
+            if (latest.HeartRate > 120)
+            {
+                alertMessage = $"⚠️ High heart rate: {latest.HeartRate} bpm";
+                alertClass = "alert-danger";
+            }
+            else if (latest.Spo2 < 90)
+            {
+                alertMessage = $"⚠️ Low SpO₂: {latest.Spo2}%";
+                alertClass = "alert-danger";
+            }
+            else
+            {
+                alertMessage = null;
+            }
+        }
+
+        var labels = readings.Select(r => r.Time.ToLocalTime().ToString("HH:mm:ss")).ToArray();
+        var hrVals = readings.Select(r => r.HeartRate).ToArray();
+        var spVals = readings.Select(r => r.Spo2).ToArray();
+
+        await JS.InvokeVoidAsync("vitalsCharts.update", hrKey, labels, hrVals);
+        await JS.InvokeVoidAsync("vitalsCharts.update", spo2Key, labels, spVals);
+
+        lastUpdated = DateTime.Now.ToString("HH:mm:ss");
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    // ── Fetch & Render Sleep (7 days) ──────────────────────────────────────────────
+    private async Task LoadSleepAsync()
+    {
+        sleepLoading = true;
+        StateHasChanged();
+
+        // 1) Fetch raw trend points
+        var all = await Http.GetFromJsonAsync<List<TrendPoint>>(sleepApiUrl) ?? new();
+
+        // 2) Keep only the two sleep metrics
+        var sleepPoints = all
+          .Where(p =>
+             p.Type.Equals("sleepDuration", StringComparison.OrdinalIgnoreCase)
+          || p.Type.Equals("sleepRestlessnessIndex", StringComparison.OrdinalIgnoreCase))
+          .OrderBy(p => p.Timestamp)
+          .ToList();
+
+        // 3) Group by calendar day, last 7 days
+        var byDay = sleepPoints
+          .GroupBy(p => p.Timestamp.Date)
+          .OrderByDescending(g => g.Key)
+          .Take(7)
+          .OrderBy(g => g.Key)
+          .ToList();
+
+        // 4) Build labels & safe arrays
+        var labels = byDay.Select(g => g.Key.ToString("MM/dd")).ToArray();
+        var durationData = byDay
+          .Select(g =>
+             g.FirstOrDefault(p => p.Type.Equals("sleepDuration", StringComparison.OrdinalIgnoreCase))
+              ?.Value
+             ?? 0)
+          .ToArray();
+        var qualityData = byDay
+          .Select(g =>
+          {
+              var rest = g.FirstOrDefault(p => p.Type.Equals("sleepRestlessnessIndex", StringComparison.OrdinalIgnoreCase))
+                   ?.Value
+                ?? 0;
+              return 100.0 - rest;
+          })
+          .ToArray();
+
+        // 5) Prepare datasets
+        var datasets = new[]
+        {
+      new {
+        label           = "Duration (h)",
+        data            = durationData,
+        backgroundColor = "#6c757d88",
+        borderColor     = "#6c757d"
+      },
+      new {
+        label           = "Quality (%)",
+        data            = qualityData,
+        backgroundColor = "#28a74588",
+        borderColor     = "#28a745"
+      }
+    };
+
+        // 6) Update chart
+        await JS.InvokeVoidAsync("vitalsCharts.updateMultiBar", sleepKey, labels, datasets);
+
+        sleepLoading = false;
+        StateHasChanged();
+    }
+
+
+    public void Dispose()
+    {
+        timer?.Stop();
+        timer?.Dispose();
+    }
+
+    private class VitalsReading
+    {
+        public DateTime Time { get; set; }
+        public double HeartRate { get; set; }
+        public double Spo2 { get; set; }
+    }
+
+    private class TrendPoint
+    {
+        public DateTime Timestamp { get; set; }
+        public string Type { get; set; } = "";
+        public double Value { get; set; }
+    }
 }
