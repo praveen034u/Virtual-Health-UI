@@ -20,6 +20,9 @@
     <Content Update="wwwroot\appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Update="wwwroot\Data\Consent.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\Data\ImagingStudies.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
