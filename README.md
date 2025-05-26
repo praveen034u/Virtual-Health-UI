@@ -7,6 +7,7 @@ aws s3api create-bucket \
   --create-bucket-configuration LocationConstraint=us-west-2
 
 #Enable Static Website Hosting:
+
 aws s3 website s3://your-blazor-ui-bucket-name/ \
   --index-document index.html \
   --error-document index.html
