@@ -27,12 +27,6 @@ builder.Services.AddScoped(sp => new HttpClient
     BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
 });
 
-// ✅ Fix: Avoid unsupported reflection for nullability metadata in WASM
-builder.Services.Configure<JsonSerializerOptions>(options =>
-{
-    options.TypeInfoResolver = null;
-});
-
 builder.Services.AddOidcAuthentication(options =>
 {
     // Configure your authentication provider options here.
