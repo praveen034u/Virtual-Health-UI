@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using System.Text.Json;
 using VirtualHealth.UI;
 using VirtualHealth.UI.Services;
 
@@ -24,6 +25,12 @@ builder.Services.AddScoped<MedplumWrapperApiHttpClient>(sp => new MedplumWrapper
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+});
+
+// ✅ Fix: Avoid unsupported reflection for nullability metadata in WASM
+builder.Services.Configure<JsonSerializerOptions>(options =>
+{
+    options.TypeInfoResolver = null;
 });
 
 builder.Services.AddOidcAuthentication(options =>
