@@ -120,6 +120,7 @@ public partial class UserProfile
         patientProfile.SocialHistories = await LoadSocialHistory();
         patientProfile.LifestyleHistories = await LoadLifeStyle();
         socialHistoryStatus = await LoadSocialHistoryStatus();
+        patientProfile.Consent = await LoadConsent();
     }
 
     private async Task LoadProfileData(PatientProfile profile)
@@ -240,6 +241,18 @@ public partial class UserProfile
                 //        existing.StatusDisplay = updated.Detail;
                 //    }
                 //}
+            }
+        }
+
+        // Update matching Consent from Saved data
+        foreach (var updated in profile.Consent)
+        {
+            var existing = patientProfile.Consent.FirstOrDefault(c =>
+                (c.Code == updated.Code || c.Display == updated.Display));
+            if (existing != null)
+            {
+                existing.Id = updated.Id;
+                existing.IsSelected = updated.IsSelected;
             }
         }
     }
@@ -419,4 +432,27 @@ public partial class UserProfile
         }
         return socialHistory;
     }
+
+    private async Task<List<ConsentInput>> LoadConsent()
+    {
+        List<ConsentInput> consent = new List<ConsentInput>();
+        try
+        {
+            var response = await Http.GetAsync("Data/Consent.json");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                consent = System.Text.Json.JsonSerializer.Deserialize<List<ConsentInput>>(json, new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }) ?? new List<ConsentInput>();
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+        return consent;
+    }
+
 }
