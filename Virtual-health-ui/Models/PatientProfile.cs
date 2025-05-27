@@ -26,7 +26,7 @@ public class PatientProfile
     public string EmergencyContactPhone { get; set; } = string.Empty;
 
     public PractitionerInput Pcp { get; set; } = new();
-    
+
     public string InsuranceProvider { get; set; } = string.Empty;
     public string PolicyNumber { get; set; } = string.Empty;
 
@@ -50,6 +50,8 @@ public class PatientProfile
     //public List<MentalHealthInput> MentalHealthAssessments { get; set; } = new();
 
     public List<LifeStyleInput> LifestyleHistories { get; set; } = new();
+
+    public List<ConsentInput> Consent { get; set; } = new();
 }
 
 public class PatientAddressInput
@@ -142,4 +144,12 @@ public class UserSecureProfile
     public string Id { get; set; }
     public string Name { get; set; }
     // Other properties...
+}
+
+public class ConsentInput
+{
+    public string Id { get; set; } = string.Empty;
+    public string Code { get; set; } = default!;
+    public string Display { get; set; } = default!;
+    public bool IsSelected { get; set; } = false; // For checkbox binding
 }

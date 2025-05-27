@@ -1,0 +1,14 @@
+[
+  {
+    "code": "patient-privacy",
+    "display": "Privacy Agreement"
+  },
+  {
+    "code": "treatment",
+    "display": "Treatment Agreement"
+  },
+  {
+    "code": "coverage",
+    "display": "Billing Consent"
+  }
+]
