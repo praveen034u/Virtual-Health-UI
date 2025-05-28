@@ -2,7 +2,7 @@ Blazor WebAssembly frontend consuming APIs, showing dashboards, medication remin
 
 # Using AWS CLI (preferred for CI/CD)
 
-# Create bucket first
+# Create bucket first-
 aws s3api create-bucket \
   --bucket your-blazor-ui-bucket-name \
   --region us-west-2 \
