@@ -1,14 +1,12 @@
 ﻿@page "/ai-health-prediction"
 
-<h3>VirtualAI_HealthPrediction</h3>
-
 @using System.Net.Http.Json
 @using Microsoft.JSInterop
 @inject HttpClient Http
 @inject IJSRuntime JS
 @implements IDisposable
 
-<h3 class="my-4">Live Heart Rate,SpO₂ (Last 30 Min) &amp; Sleep Overview</h3>
+<h3 class="mt-4 mb-4 text-primary">BioVitals Live - Wellness Status in Real-Time</h3>
 
 @if (alertMessage is not null)
 {
@@ -43,7 +41,7 @@
     <!-- SpO₂ Card -->
     <div class="col-md-4 d-flex">
         <div class="card chart-card flex-fill d-flex flex-column">
-            <div class="card-header">🩸 SpO₂ (%)</div>
+            <div class="card-header">🩸 Blood Oxygen (%)</div>
             <div class="card-body flex-fill position-relative">
                 @if (isLoading)
                 {

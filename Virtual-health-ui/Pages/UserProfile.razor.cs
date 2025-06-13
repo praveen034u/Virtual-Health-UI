@@ -32,6 +32,7 @@ public partial class UserProfile
 
     private async Task HandleValidSubmit()
     {
+        string patientId = string.Empty;
         try
         {
             patientProfile.PatientName = (patientProfile.FirstName + " " + patientProfile.LastName).Trim();
@@ -54,12 +55,7 @@ public partial class UserProfile
                 .Where(sh => sh.StatusValue != null).ToList()
                 .ForEach(sh => sh.StatusDisplay = sh.StatusValue?.ToString());
 
-
-                if (match != null)
-                    history.StatusDisplay = match.StatusDisplay;
-                else
-                    history.StatusCode = string.Empty;
-            }
+            
             patientProfile.SocialHistories
                 .Where(sh => sh.StatusValue != null).ToList()
                 .ForEach(sh => sh.StatusDisplay = sh.StatusValue?.ToString());
@@ -85,21 +81,11 @@ public partial class UserProfile
                     sh.StatusDisplay = sh.StatusValue?.ToString();
                     //sh.Detail = sh.StatusValue?.ToString();
                 });
-
-            string patientId = string.Empty;
+           
             if (string.IsNullOrEmpty(patientProfile.PatientId))
                 patientId = await MedplumService.CreatePatientFullProfileAsync(patientProfile);
             else
                 patientId = await MedplumService.UpdatePatientFullProfileAsync(patientProfile);
-
-
-            if (!string.IsNullOrEmpty(patientId))
-                await JS.InvokeVoidAsync("alert", "Profile submitted successfully!"); //"Profile submitted successfully!"
-
-            StateHasChanged(); // 🔄 Force re-render
-        }
-        catch (Exception ex) 
-
 
             if (!string.IsNullOrEmpty(patientId))
                 await JS.InvokeVoidAsync("alert", "Profile submitted successfully!"); //"Profile submitted successfully!"
@@ -108,8 +94,12 @@ public partial class UserProfile
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", "Error occured while submitting profile. Try after sometime or contact admin.");
+            if (!string.IsNullOrEmpty(patientId))
+                await JS.InvokeVoidAsync("alert", "Profile submitted successfully!"); //"Profile submitted successfully!"
+
+            StateHasChanged(); // 🔄 Force re-render
         }
+       
     }
 
     private async Task GenerateSummary()
@@ -130,6 +120,7 @@ public partial class UserProfile
         patientProfile.SocialHistories = await LoadSocialHistory();
         patientProfile.LifestyleHistories = await LoadLifeStyle();
         socialHistoryStatus = await LoadSocialHistoryStatus();
+        patientProfile.Consent = await LoadConsent();
     }
 
     private async Task LoadProfileData(PatientProfile profile)
@@ -250,6 +241,18 @@ public partial class UserProfile
                 //        existing.StatusDisplay = updated.Detail;
                 //    }
                 //}
+            }
+        }
+
+        // Update matching Consent from Saved data
+        foreach (var updated in profile.Consent)
+        {
+            var existing = patientProfile.Consent.FirstOrDefault(c =>
+                (c.Code == updated.Code || c.Display == updated.Display));
+            if (existing != null)
+            {
+                existing.Id = updated.Id;
+                existing.IsSelected = updated.IsSelected;
             }
         }
     }
@@ -429,4 +432,27 @@ public partial class UserProfile
         }
         return socialHistory;
     }
+
+    private async Task<List<ConsentInput>> LoadConsent()
+    {
+        List<ConsentInput> consent = new List<ConsentInput>();
+        try
+        {
+            var response = await Http.GetAsync("Data/Consent.json");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                consent = System.Text.Json.JsonSerializer.Deserialize<List<ConsentInput>>(json, new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }) ?? new List<ConsentInput>();
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+        return consent;
+    }
+
 }

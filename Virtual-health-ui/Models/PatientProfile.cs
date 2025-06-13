@@ -50,6 +50,8 @@ public class PatientProfile
     //public List<MentalHealthInput> MentalHealthAssessments { get; set; } = new();
 
     public List<LifeStyleInput> LifestyleHistories { get; set; } = new();
+
+    public List<ConsentInput> Consent { get; set; } = new();
 }
 
 public class PatientAddressInput
@@ -127,6 +129,7 @@ public class SocialHistoryStatusInput
     public string StatusDisplay { get; set; }
     public bool IsSelected { get; set; } = false;
 }
+
 public class MentalHealthInput
 {
     public string Code { get; set; }  // PHQ-9 question code or similar
@@ -141,4 +144,12 @@ public class UserSecureProfile
     public string Id { get; set; }
     public string Name { get; set; }
     // Other properties...
+}
+
+public class ConsentInput
+{
+    public string Id { get; set; } = string.Empty;
+    public string Code { get; set; } = default!;
+    public string Display { get; set; } = default!;
+    public bool IsSelected { get; set; } = false; // For checkbox binding
 }

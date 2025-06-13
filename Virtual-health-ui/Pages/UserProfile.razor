@@ -341,7 +341,7 @@
 		</div>
 
 		<!-- Consent -->
-		<div class="accordion-item">
+		@* <div class="accordion-item">
 			<h2 class="accordion-header" id="headingConsent">
 				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConsent">
 					10. Consent Forms
@@ -361,6 +361,26 @@
 						<InputCheckbox @bind-Value="patientProfile.ConsentBilling" class="form-check-input" />
 						<label class="form-check-label">I agree to the billing terms</label>
 					</div>
+				</div>
+			</div>
+		</div> *@
+
+		<!-- Consent -->
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="headingConsent">
+				<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConsent">
+					10. Consent Forms
+				</button>
+			</h2>
+			<div id="collapseConsent" class="accordion-collapse collapse" data-bs-parent="#profileAccordion">
+				<div class="accordion-body">
+					@foreach (var consent in patientProfile.Consent)
+					{
+						<div class="form-check">
+							<InputCheckbox @bind-Value="consent.IsSelected" class="form-check-input" />
+							<label class="form-check-label">@consent.Display</label>
+						</div>
+					}
 				</div>
 			</div>
 		</div>

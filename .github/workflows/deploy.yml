@@ -1,36 +1,44 @@
-name: Build and Deploy Blazor WASM to S3
+name: Deploy Blazor WASM to AWS S3
 
 on:
   push:
-    branches: [ master ]  # Trigger on pushes to main (adjust the branch as needed)
+    branches:
+      - main  # or your deployment branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      # Install the .NET 9 SDK (not pre-installed on GitHub runners by default)
-      - name: Setup .NET 9 SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '9.0.x'  # Installs latest .NET 9 SDK so we can build net9.0 projects
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.x'
 
-      - name: Restore .NET dependencies
-        run: dotnet restore Virtual-health-ui/VirtualHealth.UI.csproj
+    - name: Publish Blazor WASM
+      run: dotnet publish -c Release -o publish
 
-      - name: Publish Blazor WASM app
-        run: dotnet publish Virtual-health-ui/VirtualHealth.UI.csproj --configuration Release --output publish
+    # - name: Install AWS CLI
+    #   run: |
+    #     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    #     unzip awscliv2.zip
+    #     sudo ./aws/install
 
-      # Sync the published files to the S3 bucket
-      - name: Deploy to S3 (Sync)
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --delete
-        env:
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}         # Your S3 bucket name (set as secret)
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # AWS access key (secret)
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS secret key (secret)
-          AWS_REGION: 'us-east-1'        # (Optional) AWS region, e.g., us-east-1
-          SOURCE_DIR: 'publish/wwwroot'  # Folder to upload (the Blazor app's static files)
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Sync to S3
+      run: aws s3 sync publish/wwwroot s3://${{ secrets.AWS_S3_BUCKET }} --delete
+
+    - name: Invalidate CloudFront Cache
+      run: |
+        aws cloudfront create-invalidation \
+          --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+          --paths "/*"
