@@ -17,7 +17,8 @@ builder.Services.AddScoped<MedPlumAPIService>();
 builder.Services.AddScoped<MedplumWrapperApiHttpClient>(sp => new MedplumWrapperApiHttpClient(
     new HttpClient
     {
-        BaseAddress = new Uri("https://virtual-health-api-service-368018650904.us-central1.run.app")
+         //BaseAddress = new Uri("https://localhost:7195") // uncomment for local development
+           BaseAddress = new Uri("https://virtual-health-api-service-368018650904.us-central1.run.app") // comment for local development
     }
 ));
 
