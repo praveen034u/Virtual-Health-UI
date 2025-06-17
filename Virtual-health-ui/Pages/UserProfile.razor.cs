@@ -11,6 +11,7 @@ public partial class UserProfile
     private List<SocialHistoryStatusInput> socialHistoryStatus = new();
     private string selectedStatusCode = string.Empty;
     private string email = string.Empty;
+    private string buttonText = "Submit";
     //private HttpClient Http = new HttpClient { BaseAddress = new Uri("https://localhost:7236") };
 
     protected override async Task OnInitializedAsync()
@@ -26,6 +27,7 @@ public partial class UserProfile
         }
         else
         {
+            buttonText = "Update";
             await LoadProfileData(profile);
         }
     }
