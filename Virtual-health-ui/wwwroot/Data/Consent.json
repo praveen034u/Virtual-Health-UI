@@ -4,11 +4,15 @@
     "display": "Privacy Agreement"
   },
   {
-    "code": "treatment",
-    "display": "Treatment Agreement"
+    "code": "wearable-data",
+    "display": "Consent to collection and Storage of vital health data from wearable device."
   },
   {
-    "code": "coverage",
-    "display": "Billing Consent"
+    "code": "healthinformation-sharing",
+    "display": "Consent to Share Primary Care Provider (PCP) Data"
+  },
+  {
+    "code": "labreport-sharing",
+    "display": "Consent to Share Lab Reports"
   }
 ]
