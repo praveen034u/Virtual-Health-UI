@@ -23,6 +23,7 @@ public partial class UserProfile
         var profile = await MedplumService.GetPatientFullProfileAsync(email);
         if (string.IsNullOrEmpty(profile.PatientId))
         {
+            patientProfile.PatientId = string.Empty;
             patientProfile.PatientAddress.Country = "USA";
         }
         else
@@ -47,7 +48,6 @@ public partial class UserProfile
                 var match = socialHistoryStatus
                     .FirstOrDefault(s => s.BehaviorCode == history.BehaviorCode && s.StatusCode == history.StatusCode);
 
-
                 if (match != null)
                     history.StatusDisplay = match.StatusDisplay;
                 else
@@ -56,12 +56,6 @@ public partial class UserProfile
             patientProfile.SocialHistories
                 .Where(sh => sh.StatusValue != null).ToList()
                 .ForEach(sh => sh.StatusDisplay = sh.StatusValue?.ToString());
-
-            
-            patientProfile.SocialHistories
-                .Where(sh => sh.StatusValue != null).ToList()
-                .ForEach(sh => sh.StatusDisplay = sh.StatusValue?.ToString());
-
 
             foreach (var lifeStyle in patientProfile.LifestyleHistories.Where(sh => !string.IsNullOrEmpty(sh.StatusCode)))
             {
@@ -76,6 +70,7 @@ public partial class UserProfile
                 else
                     lifeStyle.StatusCode = string.Empty;
             }
+
             patientProfile.LifestyleHistories
                 .Where(sh => sh.StatusValue != null).ToList()
                 .ForEach(sh =>
@@ -101,7 +96,6 @@ public partial class UserProfile
 
             StateHasChanged(); // 🔄 Force re-render
         }
-       
     }
 
     private async Task GenerateSummary()
@@ -155,10 +149,6 @@ public partial class UserProfile
         patientProfile.Pcp.Gender = profile.Pcp?.Gender ?? string.Empty;
         patientProfile.Pcp.Email = profile.Pcp?.Email ?? string.Empty;
 
-        patientProfile.ConsentTreatment = profile.ConsentTreatment;
-        patientProfile.ConsentPrivacy = profile.ConsentPrivacy;
-        patientProfile.ConsentBilling = profile.ConsentBilling;
-
         // Update matching PastConditions from Saved data
         foreach (var updated in profile.PastConditions)
         {
@@ -197,7 +187,7 @@ public partial class UserProfile
                 if (existing.InputType == "number")
                 {
                     existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
-                    existing.StatusValue = Convert.ToInt32(updated.StatusDisplay ?? string.Empty);
+                    existing.StatusValue = string.IsNullOrEmpty(updated.StatusDisplay) ? null : Convert.ToInt32(updated.StatusDisplay);
                 }
                 else
                 {
@@ -222,7 +212,7 @@ public partial class UserProfile
                 if (existing.InputType == "number")
                 {
                     existing.StatusDisplay = updated.StatusDisplay ?? string.Empty;
-                    existing.StatusValue = Convert.ToInt32(updated.StatusDisplay ?? string.Empty);
+                    existing.StatusValue = string.IsNullOrEmpty(updated.StatusDisplay) ? null : Convert.ToInt32(updated.StatusDisplay);
                 }
                 else
                 {
