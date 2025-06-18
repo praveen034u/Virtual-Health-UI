@@ -112,17 +112,17 @@
     private System.Timers.Timer? timer;
 
     private string? patientId;
-
+	private int durationMinutes = 15; // Default duration for vitals API
     protected override async Task OnInitializedAsync()
     {
         patientId = await SecureStorage.GetItemAsync("vh_patient_id");
     }
 
     private string GetVitalsApiUrl() =>
-        $"/api/vitals/01969d19-eb2d-76df-ae3c-aac3f174667b?durationMinutes=30";
+        $"/api/vitals/{patientId}?durationMinutes={durationMinutes}";
 
     private string GetSleepApiUrl() =>
-        $"/api/Medplum/vitals-trend/01969d19-eb2d-76df-ae3c-aac3f174667b";
+        $"/api/Medplum/vitals-trend/{patientId}";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
