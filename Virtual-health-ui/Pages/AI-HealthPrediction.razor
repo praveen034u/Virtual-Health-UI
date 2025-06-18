@@ -1,9 +1,10 @@
-﻿@page "/ai-health-prediction"
+@page "/ai-health-prediction"
 
-@inject IJSRuntime JSRuntime
-@inject NavigationManager Navigation
-@inject SecureStorageService SecureStorage
+@using System.Net.Http.Json
 @inject MedplumWrapperApiHttpClient MedPlumHttpClient
+@inject SecureStorageService SecureStorage
+@inject IJSRuntime JS
+@implements IDisposable
 
 <h3 class="mt-4 mb-4 text-primary">BioVitals Live - Wellness Status in Real-Time</h3>
 
@@ -14,8 +15,6 @@
         <button type="button" class="btn-close" aria-label="Close" @onclick="() => alertMessage = null"></button>
     </div>
 }
-
-<!--<h3 class="my-4">Vitals &amp; Sleep Overview</h3>-->
 
 <div class="row gx-4 gy-4">
     <!-- Heart Rate Card -->
@@ -70,83 +69,89 @@
                 <canvas id="sleepCanvas"></canvas>
             </div>
             <div class="card-footer text-muted small">
-                &nbsp; <!-- blank to match other footers -->
+                &nbsp;
             </div>
         </div>
     </div>
 </div>
-
+<div class="row gx-4 gy-4">
+    <!-- Heart Disease Prediction Placeholder -->
+    <div class="col-md-4 d-flex">
+        <div class="card chart-card flex-fill d-flex flex-column">
+            <div class="card-header">❤️‍🩹 Heart Disease Prediction</div>
+            <div class="card-body flex-fill position-relative d-flex align-items-center justify-content-center">
+                <span class="text-muted">Coming Soon</span>
+            </div>
+            <div class="card-footer text-muted small">
+                &nbsp;
+            </div>
+        </div>
+    </div>
+    <!-- Diabetes Prediction Placeholder -->
+    <div class="col-md-4 d-flex">
+        <div class="card chart-card flex-fill d-flex flex-column">
+            <div class="card-header">🩺 Diabetes Prediction</div>
+            <div class="card-body flex-fill position-relative d-flex align-items-center justify-content-center">
+                <span class="text-muted">Coming Soon</span>
+            </div>
+            <div class="card-footer text-muted small">
+                &nbsp;
+            </div>
+        </div>
+    </div>
+</div>
 @code {
-    // ── Vitals State ───────────────────────────────────────────────────────────────
     private bool isLoading = true;
     private string lastUpdated = "--:--:--";
     private string? alertMessage;
     private string alertClass = "alert-warning";
     private const string hrKey = "hrCanvas";
     private const string spo2Key = "spo2Canvas";
-
-    // ── Sleep State ────────────────────────────────────────────────────────────────
     private bool sleepLoading;
     private const string sleepKey = "sleepCanvas";
-
     private System.Timers.Timer? timer;
 
-    // ── API URLs ──────────────────────────────────────────────────────────────────
-    // private readonly string vitalsApiUrl =
-    //   "https://localhost:7195/api/vitals/01969d19-eb2d-76df-ae3c-aac3f174667b?durationMinutes=30";
+    private string? patientId;
 
-    // private readonly string sleepApiUrl =
-    //   "https://localhost:7195/api/Medplum/vitals-trend/01969d19-eb2d-76df-ae3c-aac3f174667b";
-
-    private static NavigationManager _navigationManager;
-    private static SecureStorageService _secureStorage;
-    private static IJSRuntime _jsRuntime;
-    private static HttpClient _httpClient;
-
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-
-        _navigationManager = Navigation;
-        _secureStorage = SecureStorage;
-        _jsRuntime = JSRuntime;
-        _httpClient = MedPlumHttpClient.Client;
-
+        patientId = await SecureStorage.GetItemAsync("vh_patient_id");
     }
 
-    // ── Initialize Charts & Poll ──────────────────────────────────────────────────
+    private string GetVitalsApiUrl() =>
+        $"/api/vitals/01969d19-eb2d-76df-ae3c-aac3f174667b?durationMinutes=30";
+
+    private string GetSleepApiUrl() =>
+        $"/api/Medplum/vitals-trend/01969d19-eb2d-76df-ae3c-aac3f174667b";
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
-        // Initialize empty vitals line charts
-        await JSRuntime.InvokeVoidAsync("vitalsCharts.createStatic", hrKey, "Heart Rate (bpm)", "#e74c3c", new string[0], new double[0]);
-        await JSRuntime.InvokeVoidAsync("vitalsCharts.createStatic", spo2Key, "SpO₂ (%)", "#3498db", new string[0], new double[0]);
+        await JS.InvokeVoidAsync("vitalsCharts.createStatic", hrKey, "Heart Rate (bpm)", "#e74c3c", new string[0], new double[0]);
+        await JS.InvokeVoidAsync("vitalsCharts.createStatic", spo2Key, "SpO₂ (%)", "#3498db", new string[0], new double[0]);
+        await JS.InvokeVoidAsync("vitalsCharts.createMultiBar", sleepKey, new string[0], new object[0]);
 
-        // Initialize empty sleep grouped bar
-        await JSRuntime.InvokeVoidAsync("vitalsCharts.createMultiBar", sleepKey, new string[0], new object[0]);
-
-        // Start vitals polling every 10s
         timer = new System.Timers.Timer(10_000);
         timer.Elapsed += async (_, __) => await RefreshVitalsAsync();
         timer.Start();
 
-        // First data load
         await RefreshVitalsAsync();
         await LoadSleepAsync();
     }
 
-    // ── Fetch & Render Vitals ─────────────────────────────────────────────────────
     private async Task RefreshVitalsAsync()
     {
-        var patientId = "hardcode the patient";//await _secureStorage.GetItemAsync("vh_patient_id");
+        if (string.IsNullOrEmpty(patientId))
+            return;
+
         isLoading = true;
         StateHasChanged();
 
-        var readings = await _httpClient.GetFromJsonAsync<List<VitalsReading>>($"/api/Medplum/vitals-trend/{patientId}") ?? new();
+        var readings = await MedPlumHttpClient.Client.GetFromJsonAsync<List<VitalsReading>>(GetVitalsApiUrl()) ?? new();
         if (readings.Count > 180)
             readings = readings.Skip(readings.Count - 180).ToList();
 
-        // Alert logic
         var latest = readings.LastOrDefault();
         if (latest != null)
         {
@@ -170,25 +175,24 @@
         var hrVals = readings.Select(r => r.HeartRate).ToArray();
         var spVals = readings.Select(r => r.Spo2).ToArray();
 
-        await JSRuntime.InvokeVoidAsync("vitalsCharts.update", hrKey, labels, hrVals);
-        await JSRuntime.InvokeVoidAsync("vitalsCharts.update", spo2Key, labels, spVals);
+        await JS.InvokeVoidAsync("vitalsCharts.update", hrKey, labels, hrVals);
+        await JS.InvokeVoidAsync("vitalsCharts.update", spo2Key, labels, spVals);
 
         lastUpdated = DateTime.Now.ToString("HH:mm:ss");
         isLoading = false;
         StateHasChanged();
     }
 
-    // ── Fetch & Render Sleep (7 days) ──────────────────────────────────────────────
     private async Task LoadSleepAsync()
     {
-        var patientId = "hardcode the patient"; //await _secureStorage.GetItemAsync("vh_patient_id");
+        if (string.IsNullOrEmpty(patientId))
+            return;
+
         sleepLoading = true;
         StateHasChanged();
 
-        // 1) Fetch raw trend points
-        var all = await _httpClient.GetFromJsonAsync<List<TrendPoint>>($"/api/Medplum/vitals/{patientId}") ?? new();
+        var all = await MedPlumHttpClient.Client.GetFromJsonAsync<List<TrendPoint>>(GetSleepApiUrl()) ?? new();
 
-        // 2) Keep only the two sleep metrics
         var sleepPoints = all
           .Where(p =>
              p.Type.Equals("sleepDuration", StringComparison.OrdinalIgnoreCase)
@@ -196,7 +200,6 @@
           .OrderBy(p => p.Timestamp)
           .ToList();
 
-        // 3) Group by calendar day, last 7 days
         var byDay = sleepPoints
           .GroupBy(p => p.Timestamp.Date)
           .OrderByDescending(g => g.Key)
@@ -204,7 +207,6 @@
           .OrderBy(g => g.Key)
           .ToList();
 
-        // 4) Build labels & safe arrays
         var labels = byDay.Select(g => g.Key.ToString("MM/dd")).ToArray();
         var durationData = byDay
           .Select(g =>
@@ -222,30 +224,27 @@
           })
           .ToArray();
 
-        // 5) Prepare datasets
         var datasets = new[]
         {
-      new {
-        label           = "Duration (h)",
-        data            = durationData,
-        backgroundColor = "#6c757d88",
-        borderColor     = "#6c757d"
-      },
-      new {
-        label           = "Quality (%)",
-        data            = qualityData,
-        backgroundColor = "#28a74588",
-        borderColor     = "#28a745"
-      }
-    };
+            new {
+                label           = "Duration (h)",
+                data            = durationData,
+                backgroundColor = "#6c757d88",
+                borderColor     = "#6c757d"
+            },
+            new {
+                label           = "Quality (%)",
+                data            = qualityData,
+                backgroundColor = "#28a74588",
+                borderColor     = "#28a745"
+            }
+        };
 
-        // 6) Update chart
-        await JSRuntime.InvokeVoidAsync("vitalsCharts.updateMultiBar", sleepKey, labels, datasets);
+        await JS.InvokeVoidAsync("vitalsCharts.updateMultiBar", sleepKey, labels, datasets);
 
         sleepLoading = false;
         StateHasChanged();
     }
-
 
     public void Dispose()
     {
