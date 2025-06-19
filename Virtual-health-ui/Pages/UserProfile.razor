@@ -9,7 +9,15 @@
 @inject HttpClient Http
 
 
-<h3 class="mt-4 mb-4 text-primary">User Profile</h3>
+<h3 class="mt-4 mb-2 text-primary d-flex justify-content-between align-items-center">
+	<span>User Profile</span>
+	<div class="d-flex gap-2">
+		<button class="btn btn-sm btn-outline-secondary" @onclick="ToggleAccordion">@accordionButtonText</button>
+		<button class="btn btn-sm btn-outline-primary" @onclick="StartVoiceAssistant">🎤 Fill Form with Voice</button>
+	</div>
+</h3>
+
+
 
 <EditForm Model="@patientProfile" OnValidSubmit="@HandleValidSubmit">
 	<DataAnnotationsValidator />
@@ -33,10 +41,20 @@
 						<label>Last Name <span class="text-danger">*</span></label>
 						<InputText @bind-Value="patientProfile.LastName" class="form-control" placeholder="Doe" />
 					</div>
+					<!-- 📅 Date of Birth -->
 					<div class="form-group">
 						<label>Date of Birth <span class="text-danger">*</span></label>
-						<InputDate @bind-Value="patientProfile.BirthDate" class="form-control" />
+						<div class="input-group">
+							<InputDate @bind-Value="patientProfile.BirthDate" class="form-control" />
+							<!--<span class="input-group-text">MM/DD/YYYY</span> @* ✅ US format hint *@-->
+						</div>
+						@* @if (patientProfile.BirthDate != default)
+						{
+							<small class="text-muted">You said: @patientProfile.BirthDate.ToString("MM/dd/yyyy")</small>
+						} *@
 					</div>
+
+					<!-- 🧍 Gender -->
 					<div class="form-group">
 						<label>Gender <span class="text-danger">*</span></label>
 						<InputSelect @bind-Value="patientProfile.Gender" class="form-control">
@@ -46,6 +64,10 @@
 							<option value="other">Other</option>
 							<option value="unknown">Unknown</option>
 						</InputSelect>
+						@* @if (!string.IsNullOrWhiteSpace(patientProfile.Gender))
+						{
+							<small class="text-muted">You said: @patientProfile.Gender</small>
+						} *@
 					</div>
 
 					<div class="form-group">

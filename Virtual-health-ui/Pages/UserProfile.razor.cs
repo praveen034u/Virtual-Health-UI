@@ -5,32 +5,109 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace VirtualHealth.UI.Pages;
 
-public partial class UserProfile
+public partial class UserProfile : IAsyncDisposable
 {
+    private DotNetObjectReference<UserProfile>? dotNetHelper;
     private PatientProfile patientProfile = new();
     private List<SocialHistoryStatusInput> socialHistoryStatus = new();
     private string selectedStatusCode = string.Empty;
     private string email = string.Empty;
     private string buttonText = "Submit";
-    //private HttpClient Http = new HttpClient { BaseAddress = new Uri("https://localhost:7236") };
+    private bool isExpanded = false;
+    private string accordionButtonText => isExpanded ? "🔽 Collapse All" : "🔼 Expand All";
 
     protected override async Task OnInitializedAsync()
     {
+        dotNetHelper = DotNetObjectReference.Create(this);
         email = await SecureStorage.GetUserIdAsync();
-        patientProfile.Email = email;
-        await LoadInitialData();
 
-        var profile = await MedplumService.GetPatientFullProfileAsync(email);
-        if (string.IsNullOrEmpty(profile.PatientId))
+        if (!string.IsNullOrWhiteSpace(email))
         {
-            patientProfile.PatientId = string.Empty;
-            patientProfile.PatientAddress.Country = "USA";
+            patientProfile.Email = email;
+            await LoadInitialData();
+
+            var profile = await MedplumService.GetPatientFullProfileAsync(email);
+            if (!string.IsNullOrEmpty(profile.PatientId))
+            {
+                buttonText = "Update";
+                await LoadProfileData(profile);
+            }
+            else
+            {
+                patientProfile.PatientId = string.Empty;
+                patientProfile.PatientAddress.Country = "USA";
+            }
         }
         else
         {
-            buttonText = "Update";
-            await LoadProfileData(profile);
+            patientProfile.PatientAddress.Country = "USA";
+            await LoadInitialData();
         }
+    }
+
+    private async Task ToggleAccordion()
+    {
+        isExpanded = !isExpanded;
+        await JS.InvokeVoidAsync("toggleAllAccordions", isExpanded);
+    }
+
+    private async Task StartVoiceAssistant()
+    {
+        // ✅ Open personal details accordion first
+        await JS.InvokeVoidAsync("openAccordionSection", "collapsePersonal");
+
+        // ✅ Start voice assistant
+        await JS.InvokeVoidAsync("startVoiceAssistantIntro", dotNetHelper);
+    }
+
+    [JSInvokable]
+    public void SetSpeechInput(string fieldName, string value)
+    {
+        switch (fieldName)
+        {
+            case "FirstName":
+                patientProfile.FirstName = value;
+                break;
+            case "LastName":
+                patientProfile.LastName = value;
+                break;
+            case "BirthDate":
+                if (DateTime.TryParse(value, out var dob))
+                    patientProfile.BirthDate = dob;
+                break;
+            case "Gender":
+                patientProfile.Gender = value.ToLower();
+                break;
+            case "PhoneNumber":
+                patientProfile.PhoneNumber = value;
+                break;
+            case "AddressLine1":
+                patientProfile.PatientAddress.AddressLine1 = value;
+                break;
+            case "Street":
+                patientProfile.PatientAddress.Street = value;
+                break;
+            case "City":
+                patientProfile.PatientAddress.City = value;
+                break;
+            case "State":
+                patientProfile.PatientAddress.State = value;
+                break;
+            case "ZipCode":
+                patientProfile.PatientAddress.ZipCode = value;
+                break;
+            case "Country":
+                patientProfile.PatientAddress.Country = value;
+                break;
+
+        }
+
+        StateHasChanged(); // ✅ re-render UI
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        dotNetHelper?.Dispose();
     }
 
     private async Task HandleValidSubmit()
