@@ -13,8 +13,10 @@ public partial class UserProfile : IAsyncDisposable
     private string selectedStatusCode = string.Empty;
     private string email = string.Empty;
     private string buttonText = "Submit";
+    private bool isVoiceActive = false;
     private bool isExpanded = false;
     private string accordionButtonText => isExpanded ? "🔽 Collapse All" : "🔼 Expand All";
+    private string voiceButtonText => isVoiceActive ? "🛑 Stop Voice Assistant" : "🎤 Fill Form with Voice";
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,11 +55,18 @@ public partial class UserProfile : IAsyncDisposable
 
     private async Task StartVoiceAssistant()
     {
-        // ✅ Open personal details accordion first
-        await JS.InvokeVoidAsync("openAccordionSection", "collapsePersonal");
+        if (!isVoiceActive)
+        {
+            isVoiceActive = true;
+            await JS.InvokeVoidAsync("startVoiceAssistant", dotNetHelper);
+        }
+        else
+        {
+            isVoiceActive = false;
+            await JS.InvokeVoidAsync("stopVoiceAssistant");
+        }
 
-        // ✅ Start voice assistant
-        await JS.InvokeVoidAsync("startVoiceAssistantIntro", dotNetHelper);
+        StateHasChanged();
     }
 
     [JSInvokable]
