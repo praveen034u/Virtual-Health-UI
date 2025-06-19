@@ -73,12 +73,47 @@
             </div>
         </div>
     </div>
-</div>
-<div class="row gx-4 gy-4">
-    <!-- Heart Disease Prediction Placeholder -->
+    <!-- Respiratory Rate Card -->
     <div class="col-md-4 d-flex">
         <div class="card chart-card flex-fill d-flex flex-column">
-            <div class="card-header">❤️‍🩹 Heart Disease Prediction</div>
+            <div class="card-header">🫁 Respiratory Rate (rpm)</div>
+            <div class="card-body flex-fill position-relative">
+                @if (isLoading)
+                {
+                    <div class="chart-overlay">
+                        <div class="spinner-border text-info" role="status"></div>
+                    </div>
+                }
+                <canvas id="respiratoryCanvas"></canvas>
+            </div>
+            <div class="card-footer text-muted small">
+                Last updated: @lastUpdated
+            </div>
+        </div>
+    </div>
+
+    <!-- Glucose Monitor Card -->
+    <div class="col-md-4 d-flex">
+        <div class="card chart-card flex-fill d-flex flex-column">
+            <div class="card-header">🩸 Glucose Monitor (mg/dL)</div>
+            <div class="card-body flex-fill position-relative">
+                @if (isLoading)
+                {
+                    <div class="chart-overlay">
+                        <div class="spinner-border text-warning" role="status"></div>
+                    </div>
+                }
+                <canvas id="glucoseCanvas"></canvas>
+            </div>
+            <div class="card-footer text-muted small">
+                Last updated: @lastUpdated
+            </div>
+        </div>
+    </div>
+    <!-- Prediction Placeholder -->
+    <div class="col-md-4 d-flex">
+        <div class="card chart-card flex-fill d-flex flex-column">
+            <div class="card-header">❤️‍🩹 Prediction</div>
             <div class="card-body flex-fill position-relative d-flex align-items-center justify-content-center">
                 <span class="text-muted">Coming Soon</span>
             </div>
@@ -87,19 +122,8 @@
             </div>
         </div>
     </div>
-    <!-- Diabetes Prediction Placeholder -->
-    <div class="col-md-4 d-flex">
-        <div class="card chart-card flex-fill d-flex flex-column">
-            <div class="card-header">🩺 Diabetes Prediction</div>
-            <div class="card-body flex-fill position-relative d-flex align-items-center justify-content-center">
-                <span class="text-muted">Coming Soon</span>
-            </div>
-            <div class="card-footer text-muted small">
-                &nbsp;
-            </div>
-        </div>
-    </div>
 </div>
+
 @code {
     private bool isLoading = true;
     private string lastUpdated = "--:--:--";
@@ -107,22 +131,24 @@
     private string alertClass = "alert-warning";
     private const string hrKey = "hrCanvas";
     private const string spo2Key = "spo2Canvas";
+    private const string respiratoryKey = "respiratoryCanvas";
+    private const string glucoseKey = "glucoseCanvas";
     private bool sleepLoading;
     private const string sleepKey = "sleepCanvas";
     private System.Timers.Timer? timer;
 
     private string? patientId;
-	private int durationMinutes = 15; // Default duration for vitals API
+
     protected override async Task OnInitializedAsync()
     {
         patientId = await SecureStorage.GetItemAsync("vh_patient_id");
     }
 
     private string GetVitalsApiUrl() =>
-        $"/api/vitals/{patientId}?durationMinutes={durationMinutes}";
+        $"/api/vitals/01969d19-eb2d-76df-ae3c-aac3f174667b?durationMinutes=30";
 
     private string GetSleepApiUrl() =>
-        $"/api/Medplum/vitals-trend/{patientId}";
+        $"/api/Medplum/vitals-trend/01969d19-eb2d-76df-ae3c-aac3f174667b";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -130,7 +156,10 @@
 
         await JS.InvokeVoidAsync("vitalsCharts.createStatic", hrKey, "Heart Rate (bpm)", "#e74c3c", new string[0], new double[0]);
         await JS.InvokeVoidAsync("vitalsCharts.createStatic", spo2Key, "SpO₂ (%)", "#3498db", new string[0], new double[0]);
+        await JS.InvokeVoidAsync("vitalsCharts.createStatic", respiratoryKey, "Respiratory Rate (rpm)", "#17a2b8", new string[0], new double[0]);
+        await JS.InvokeVoidAsync("vitalsCharts.createStatic", glucoseKey, "Glucose Monitor (mg/dL)", "#ffc107", new string[0], new double[0]);
         await JS.InvokeVoidAsync("vitalsCharts.createMultiBar", sleepKey, new string[0], new object[0]);
+        
 
         timer = new System.Timers.Timer(10_000);
         timer.Elapsed += async (_, __) => await RefreshVitalsAsync();
@@ -174,9 +203,13 @@
         var labels = readings.Select(r => r.Time.ToLocalTime().ToString("HH:mm:ss")).ToArray();
         var hrVals = readings.Select(r => r.HeartRate).ToArray();
         var spVals = readings.Select(r => r.Spo2).ToArray();
+        var respVals = readings.Select(r => r.respiratoryRate).ToArray();
+        var glucoseVals = readings.Select(r => r.bloodGlucose).ToArray();
 
         await JS.InvokeVoidAsync("vitalsCharts.update", hrKey, labels, hrVals);
         await JS.InvokeVoidAsync("vitalsCharts.update", spo2Key, labels, spVals);
+        await JS.InvokeVoidAsync("vitalsCharts.update", respiratoryKey, labels, respVals);
+        await JS.InvokeVoidAsync("vitalsCharts.update", glucoseKey, labels, glucoseVals);
 
         lastUpdated = DateTime.Now.ToString("HH:mm:ss");
         isLoading = false;
@@ -257,6 +290,8 @@
         public DateTime Time { get; set; }
         public double HeartRate { get; set; }
         public double Spo2 { get; set; }
+        public double respiratoryRate { get; set; }
+        public double bloodGlucose { get; set; }
     }
 
     private class TrendPoint
