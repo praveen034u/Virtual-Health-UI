@@ -1,0 +1,115 @@
+﻿@page "/alerts"
+
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject HttpClient Http
+
+
+<h3 class="text-primary mt-3 mb-4">🔔 Patient Alert Dashboard</h3>
+
+@if (alerts == null)
+{
+    <p>Loading alerts...</p>
+}
+else if (!alerts.Any())
+{
+    <p>No alerts found.</p>
+}
+else
+{
+    <table class="table table-hover shadow">
+        <thead class="table-light">
+            <tr>
+                <th>Alert Type</th>
+                <th>Date & Time</th>
+                <th>Triggered By</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var alert in alerts)
+            {
+                <tr>
+                    <td><span class="badge @GetBadgeClass(alert.AlertType)">@alert.AlertType</span></td>
+                    <td>@alert.Timestamp.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</td>
+                    <td>
+                        <ul class="mb-0 ps-3">
+                            @foreach (var kv in alert.TriggeredBy)
+                            {
+                                <li><strong>@kv.Key:</strong> @kv.Value</li>
+                            }
+                        </ul>
+                    </td>
+                    <td>@alert.Message</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<AlertModel> alerts;
+
+    protected override void OnInitialized()
+    {
+        // For now, hardcoded JSON
+        var json = @"
+[
+  {
+    ""alertType"": ""HighHeartRate"",
+    ""timestamp"": ""2025-06-23T13:10:17Z"",
+    ""triggeredBy"": {
+      ""heartRate"": 128,
+      ""spo2"": 88,
+      ""respiratoryRate"": 20,
+      ""bloodGlucose"": 115
+    },
+    ""message"": ""High Heart Rate and Low SpO2 detected.""
+  },
+  {
+    ""alertType"": ""LowSpO2"",
+    ""timestamp"": ""2025-06-24T09:22:00Z"",
+    ""triggeredBy"": {
+      ""spo2"": 85
+    },
+    ""message"": ""Low SpO2 alert.""
+  }
+]
+";
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        alerts = JsonSerializer.Deserialize<List<AlertModel>>(json, options);
+
+        //replace above tline with this -- alerts = await Http.GetFromJsonAsync<List<AlertModel>>("api/alerts/current-user");
+
+    }
+
+    public class AlertModel
+    {
+        [JsonPropertyName("alertType")]
+        public string AlertType { get; set; }
+
+        [JsonPropertyName("timestamp")]
+        public DateTime Timestamp { get; set; }
+
+        [JsonPropertyName("message")]
+        public string Message { get; set; }
+
+        [JsonPropertyName("triggeredBy")]
+        public Dictionary<string, double> TriggeredBy { get; set; }
+    }
+
+    private string GetBadgeClass(string alertType)
+    {
+        return alertType switch
+        {
+            "HighHeartRate" => "bg-danger",
+            "LowSpO2" => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+}
