@@ -2,8 +2,8 @@
 
 @using System.Text.Json
 @using System.Text.Json.Serialization
-@inject HttpClient Http
-
+@inject MedplumWrapperApiHttpClient MedPlumHttpClient
+@inject SecureStorageService SecureStorage
 
 <h3 class="text-primary mt-3 mb-4">🔔 Patient Alert Dashboard</h3>
 
@@ -50,7 +50,7 @@ else
 @code {
     private List<AlertModel> alerts;
 
-    protected override void OnInitialized()
+    protected async override void OnInitialized()
     {
         // For now, hardcoded JSON
         var json = @"
@@ -82,13 +82,20 @@ else
             PropertyNameCaseInsensitive = true
         };
 
-        alerts = JsonSerializer.Deserialize<List<AlertModel>>(json, options);
-
+       // alerts = JsonSerializer.Deserialize<List<AlertModel>>(json, options);
+              
         //replace above tline with this -- alerts = await Http.GetFromJsonAsync<List<AlertModel>>("api/alerts/current-user");
+       var patientId = await SecureStorage.GetItemAsync("vh_patient_id");
+       var _httpClient = MedPlumHttpClient.Client;
+        alerts = await _httpClient.GetFromJsonAsync<List<AlertModel>>("/api/Medplum/alarm-notification/{patientId}");
 
+        if (alerts == null)
+        {
+            alerts = new List<AlertModel>();
+        }
     }
 
-    public class AlertModel
+    private class AlertModel
     {
         [JsonPropertyName("alertType")]
         public string AlertType { get; set; }
