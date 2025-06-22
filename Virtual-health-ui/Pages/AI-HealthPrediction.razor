@@ -115,7 +115,17 @@
         <div class="card chart-card flex-fill d-flex flex-column">
             <div class="card-header">❤️‍🩹 Prediction</div>
             <div class="card-body flex-fill position-relative d-flex align-items-center justify-content-center">
-                <span class="text-muted">Coming Soon</span>
+                @if (predictionResult != null)
+                {
+                    <div class="prediction-results">
+                        <ul>
+                            <li><strong>Diabetes Probability:</strong> @predictionResult.Diabetes_Probability:P1</li>
+                            <li><strong>Heart Disease Probability:</strong> @predictionResult.Heart_Disease_Probability:P1</li>
+                            <li><strong>Sleep Apnea Probability:</strong> @predictionResult.Sleep_Apnea_Probability:P1</li>
+                            <li><strong>Hypertension Probability:</strong> @predictionResult.Hypertension_Probability:P1</li>
+                        </ul>
+                    </div>
+                }
             </div>
             <div class="card-footer text-muted small">
                 &nbsp;
@@ -136,12 +146,23 @@
     private bool sleepLoading;
     private const string sleepKey = "sleepCanvas";
     private System.Timers.Timer? timer;
-
+    private HealthPredictionResult predictionResult;
     private string? patientId;
 
     protected override async Task OnInitializedAsync()
     {
         patientId = await SecureStorage.GetItemAsync("vh_patient_id");
+        //var response = await MedPlumHttpClient.Client.GetFromJsonAsync<HealthPredictionResult>($"/api/Medplum/generate/{patientId}");
+        // Mocked prediction data
+        predictionResult = new HealthPredictionResult
+            {
+                Diabetes_Probability = 0.4658,
+                Heart_Disease_Probability = 0.7029,
+                Sleep_Apnea_Probability = 0.5560,
+                Hypertension_Probability = 0.1092
+            };
+
+       // predictionResult = response?? new HealthPredictionResult();
     }
 
     private string GetVitalsApiUrl() =>
@@ -299,5 +320,13 @@
         public DateTime Timestamp { get; set; }
         public string Type { get; set; } = "";
         public double Value { get; set; }
+    }
+
+    public class HealthPredictionResult
+    {
+        public double Diabetes_Probability { get; set; }
+        public double Heart_Disease_Probability { get; set; }
+        public double Sleep_Apnea_Probability { get; set; }
+        public double Hypertension_Probability { get; set; }
     }
 }

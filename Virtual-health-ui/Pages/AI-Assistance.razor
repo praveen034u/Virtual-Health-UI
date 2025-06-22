@@ -1,98 +1,133 @@
 ﻿@page "/ai-assistance"
-
-@inject HttpClient Http
+@inject MedplumWrapperApiHttpClient MedPlumHttpClient
+@inject SecureStorageService SecureStorage
 @using System.Net.Http.Json
+@using System.Text.Json
+@using System.Text.RegularExpressions
 
 <h3 class="text-center text-primary my-4">Ask Your AI Health Assistant</h3>
 <div class="container">
-    <!-- Prompt Input -->
-    <div class="mb-3">
-        <label for="userPrompt" class="form-label fw-bold">Your Health Question</label>
-        <textarea id="userPrompt" class="form-control shadow-sm" @bind="userPrompt" rows="3"
-                  placeholder="Ask something like: How is my sleep quality lately?"></textarea>
-    </div>
-    <div class="d-grid d-sm-flex justify-content-sm-end">
-        <button class="btn btn-primary px-4 py-2" @onclick="SubmitPrompt" disabled="@isLoading">
-            @if (isLoading)
-            {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                <span class="ms-2">Thinking...</span>
-            }
-            else
-            {
-                <span>Ask AI</span>
-            }
-        </button>
-    </div>
+	<!-- Prompt Input -->
+	<div class="mb-3">
+		<label for="userPrompt" class="form-label fw-bold">Your Health Question</label>
+		<textarea id="userPrompt" class="form-control shadow-sm" @bind="userPrompt" rows="3"
+		placeholder="Ask something like: How is my sleep quality lately?"></textarea>
+	</div>
+	<div class="d-grid d-sm-flex justify-content-sm-end">
+		<button class="btn btn-primary px-4 py-2" @onclick="SubmitPrompt" disabled="@isLoading">
+			@if (isLoading)
+			{
+				<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+				<span class="ms-2">Thinking...</span>
+			}
+			else
+			{
+				<span>Ask AI</span>
+			}
+		</button>
+	</div>
 
-    <!-- Predefined Prompts -->
-    <div class="mt-4">
-        <h5>Quick Questions</h5>
-        <div class="d-flex flex-wrap gap-2">
-            @foreach (var prompt in predefinedPrompts)
-            {
-                <button class="btn btn-outline-secondary rounded-pill shadow-sm px-3 py-1"
-                        @onclick="@(() => SetPrompt(prompt))">
-                    @prompt
-                </button>
-            }
-        </div>
-    </div>
+	<!-- Predefined Prompts -->
+	<div class="mt-4">
+		<h5>Quick Questions</h5>
+		<div class="d-flex flex-wrap gap-2">
+			@foreach (var prompt in predefinedPrompts)
+			{
+				<button class="btn btn-outline-secondary rounded-pill shadow-sm px-3 py-1"
+				@onclick="@(() => SetPrompt(prompt))">
+					@prompt
+				</button>
+			}
+		</div>
+	</div>
 
-    <!-- AI Response Section -->
-    @if (!string.IsNullOrWhiteSpace(aiResponse))
-    {
-        <div class="mt-4 p-4 border rounded bg-light fade-in">
-            <h5 class="text-success">AI Response:</h5>
-            <p class="mb-0">@aiResponse</p>
-        </div>
-    }
+	<!-- AI Response Section -->
+	@if (!string.IsNullOrWhiteSpace(aiResponse))
+	{
+		<div class="mt-4 p-4 border rounded bg-light fade-in">
+			<h5 class="text-success">AI Response:</h5>
+			<div class="mb-0" style="white-space: pre-line;" @key="aiResponse">
+				@((MarkupString)aiResponse)
+			</div>
+		</div>
+	}
 </div>
 
 @code {
-    private string userPrompt = string.Empty;
-    private string aiResponse = string.Empty;
-    private bool isLoading = false;
+	private string userPrompt = string.Empty;
+	private string aiResponse = string.Empty;
+	private bool isLoading = false;
+	private static HttpClient _httpClient;
+	private static SecureStorageService _secureStorage;
 
-    private List<string> predefinedPrompts = new()
-    {
-        "How is my blood pressure trend?",
-        "Am I getting enough quality sleep?",
-        "What can I do to reduce stress?",
-        "How many steps should I take daily?",
-        "Should I be concerned about my heart rate?"
-    };
+	protected override void OnInitialized()
+	{
+		_secureStorage = SecureStorage;
+		_httpClient = MedPlumHttpClient.Client;
+	}
 
-    private void SetPrompt(string prompt)
-    {
-        userPrompt = prompt;
-        aiResponse = string.Empty;
-    }
+	private List<string> predefinedPrompts = new()
+	{
+		"How is my blood pressure trend?",
+		"Am I getting enough quality sleep?",
+		"What can I do to reduce stress?",
+		"How many steps should I take daily?",
+		"Should I be concerned about my heart rate?"
+	};
 
-    private async Task SubmitPrompt()
-    {
-        if (string.IsNullOrWhiteSpace(userPrompt))
-            return;
+	private void SetPrompt(string prompt)
+	{
+		userPrompt = prompt;
+		aiResponse = string.Empty;
+	}
 
-        isLoading = true;
-        aiResponse = string.Empty;
+	private async Task SubmitPrompt()
+	{
+		if (string.IsNullOrWhiteSpace(userPrompt))
+			return;
 
-        try
-        {
-            var response = await Http.PostAsJsonAsync("/api/ai-assistance", new { input = userPrompt });
-            var result = await response.Content.ReadFromJsonAsync<AIResponse>();
-            aiResponse = result?.Response ?? "No response received from AI.";
-        }
-        catch (Exception ex)
-        {
-            aiResponse = $"Error: {ex.Message}";
-        }
+		isLoading = true;
+		aiResponse = string.Empty;
+		var vh_patientId = await _secureStorage.GetItemAsync("vh_patient_id");
 
-        isLoading = false;
-    }
+		try
+		{
+			// var response = await _httpClient.PostAsJsonAsync("/api/Medplum/generate", new { prompt = userPrompt, patientId = vh_patientId });
+			
+			// if (!response.IsSuccessStatusCode)
+			// {
+			// 	Console.WriteLine("System error occured, please retry");
+			// 	return;
+			// }
 
-    public class AIResponse
-    {
-        public string Response { get; set; } = string.Empty;
-    }
+			// var jsonResponse = await response.Content.ReadAsStringAsync();
+
+			// ExtractDivHtml(jsonResponse);
+			aiResponse = "<div><p>Hello! Let's take a look at your blood pressure readings from the past week.</p><p><strong>Systolic Blood Pressure Trend:</strong></p><ul>  <li>Your systolic blood pressure readings over the last 7 days have ranged from <strong>124 mmHg to 134 mmHg</strong>.</li>  <li>The average systolic reading for the week is approximately <strong>129 mmHg</strong>.</li></ul><p><strong>Diastolic Blood Pressure Trend:</strong></p><ul>  <li>Your diastolic blood pressure readings have ranged from <strong>78 mmHg to 85 mmHg</strong> over the past 7 days.</li>  <li>The average diastolic reading for the week is approximately <strong>81.3 mmHg</strong>.</li></ul><p><strong>Overall Assessment:</strong></p><p>Your blood pressure readings this past week show some fluctuation, which is normal. However, we are seeing a trend where both your systolic and diastolic pressures are frequently in the elevated range, particularly towards the higher end of your weekly readings.</p><p>Given your history of prehypertension and your current management through lifestyle changes, it's important to continue monitoring closely. While you are not currently in the hypertensive range, these readings suggest that the lifestyle adjustments you are making are crucial for maintaining healthy blood pressure levels and preventing progression to hypertension.</p><p>I recommend continuing with your current lifestyle modifications, such as healthy eating, regular physical activity, and stress management. It would also be beneficial to discuss these trends with your healthcare provider at your next appointment to ensure your current management strategy remains optimal. They may wish to review your readings and provide further guidance.</p></div>";
+		}
+		catch (Exception ex)
+		{
+			aiResponse = $"Error: {ex.Message}";
+		}
+
+		isLoading = false;
+	}
+
+	public static string ExtractDivHtml(string jsonResponse)
+	{
+		var doc = JsonDocument.Parse(jsonResponse);
+		var rawHtml = doc.RootElement.GetProperty("response").GetString();
+
+		// Remove Markdown code block markers and \n
+		var cleaned = Regex.Replace(rawHtml, @"```html|```", string.Empty)
+									.Replace("\\n", string.Empty)
+									.Trim();
+
+		return cleaned;
+	}
+
+	public class AIResponse
+	{
+		public string Response { get; set; } = string.Empty;
+	}
 }
