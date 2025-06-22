@@ -49,45 +49,62 @@ else
 
 @code {
     private List<AlertModel> alerts;
+    private static HttpClient _httpClient;
 
     protected async override void OnInitialized()
     {
         // For now, hardcoded JSON
-//         var json = @"
-// [
-//   {
-//     ""alertType"": ""HighHeartRate"",
-//     ""timestamp"": ""2025-06-23T13:10:17Z"",
-//     ""triggeredBy"": {
-//       ""heartRate"": 128,
-//       ""spo2"": 88,
-//       ""respiratoryRate"": 20,
-//       ""bloodGlucose"": 115
-//     },
-//     ""message"": ""High Heart Rate and Low SpO2 detected.""
-//   },
-//   {
-//     ""alertType"": ""LowSpO2"",
-//     ""timestamp"": ""2025-06-24T09:22:00Z"",
-//     ""triggeredBy"": {
-//       ""spo2"": 85
-//     },
-//     ""message"": ""Low SpO2 alert.""
-//   }
-// ]
-// ";
+        //         var json = @"
+        // [
+        //   {
+        //     ""alertType"": ""HighHeartRate"",
+        //     ""timestamp"": ""2025-06-23T13:10:17Z"",
+        //     ""triggeredBy"": {
+        //       ""heartRate"": 128,
+        //       ""spo2"": 88,
+        //       ""respiratoryRate"": 20,
+        //       ""bloodGlucose"": 115
+        //     },
+        //     ""message"": ""High Heart Rate and Low SpO2 detected.""
+        //   },
+        //   {
+        //     ""alertType"": ""LowSpO2"",
+        //     ""timestamp"": ""2025-06-24T09:22:00Z"",
+        //     ""triggeredBy"": {
+        //       ""spo2"": 85
+        //     },
+        //     ""message"": ""Low SpO2 alert.""
+        //   }
+        // ]
+        // ";
 
-        // var options = new JsonSerializerOptions
-        // {
-        //     PropertyNameCaseInsensitive = true
-        // };
+        //         var options = new JsonSerializerOptions
+        //         {
+        //             PropertyNameCaseInsensitive = true
+        //         };
 
-       // alerts = JsonSerializer.Deserialize<List<AlertModel>>(json, options);
-              
-        //replace above tline with this -- alerts = await Http.GetFromJsonAsync<List<AlertModel>>("api/alerts/current-user");
-       var patientId = await SecureStorage.GetItemAsync("vh_patient_id");
-       
-       alerts = await MedPlumHttpClient.Client.GetFromJsonAsync<List<AlertModel>>($"/api/Medplum/alarm-notification/{patientId}");
+        //alerts = JsonSerializer.Deserialize<List<AlertModel>>(json, options);
+
+        // replace above tline with this -- alerts = await Http.GetFromJsonAsync<List<AlertModel>>("api/alerts/current-user");
+
+        _httpClient = MedPlumHttpClient.Client;
+
+        var patientId = await SecureStorage.GetItemAsync("vh_patient_id");
+
+        var alertsStr = await _httpClient.GetAsync($"/api/Medplum/alarm-notification/{patientId}");
+        if (alertsStr.IsSuccessStatusCode)
+        {
+            //var json = await alertsStr.Content.ReadAsStringAsync();
+            alerts = await ParseAlertListFromApiResponseAsync(alertsStr);
+            // alerts = JsonSerializer.Deserialize<List<AlertModel>>(json, new JsonSerializerOptions
+            //     {
+            //         PropertyNameCaseInsensitive = true
+            //     }) ?? new List<AlertModel>();
+        }
+        else
+        {
+            alerts = new List<AlertModel>();
+        }
 
         if (alerts == null)
         {
@@ -95,19 +112,55 @@ else
         }
     }
 
+    private async Task<List<AlertModel>> ParseAlertListFromApiResponseAsync(HttpResponseMessage response)
+    {
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(content))
+            throw new Exception("API returned empty content.");
+
+        var jsonDoc = JsonDocument.Parse(content);
+
+        if (!jsonDoc.RootElement.TryGetProperty("message", out var messageArray) || messageArray.ValueKind != JsonValueKind.Array)
+            throw new Exception("Invalid JSON format. Expected 'message' array.");
+
+        var alertList = new List<AlertModel>();
+
+        foreach (var alertJson in jsonDoc.RootElement.GetProperty("message").EnumerateArray())
+        {
+            var triggered = alertJson.GetProperty("triggeredBy")
+                .EnumerateObject()
+                .ToDictionary(
+                    p => p.Name,
+                    p => p.Value.GetRawText().Trim('"')
+                );
+
+            var alert = new AlertModel
+                {
+                    PatientId = alertJson.GetProperty("patientId").GetString(),
+                    AlertType = alertJson.GetProperty("alertType").GetString(),
+                    Timestamp = alertJson.GetProperty("timestamp").GetDateTime(),
+                    Message = alertJson.GetProperty("message").GetString(),
+                    TriggeredBy = triggered
+                };
+
+            alertList.Add(alert);
+        }
+
+        return alertList;
+    }
+
     private class AlertModel
     {
-        [JsonPropertyName("alertType")]
+        public string PatientId { get; set; }
+
         public string AlertType { get; set; }
 
-        [JsonPropertyName("timestamp")]
         public DateTime Timestamp { get; set; }
 
-        [JsonPropertyName("message")]
         public string Message { get; set; }
 
-        [JsonPropertyName("triggeredBy")]
-        public Dictionary<string, double> TriggeredBy { get; set; }
+        public Dictionary<string, string> TriggeredBy { get; set; }
     }
 
     private string GetBadgeClass(string alertType)
@@ -118,5 +171,9 @@ else
             "LowSpO2" => "bg-warning",
             _ => "bg-secondary"
         };
+    }
+    private class AlertWrapper
+    {
+        public List<JsonElement> Message { get; set; }
     }
 }
