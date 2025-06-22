@@ -53,41 +53,41 @@ else
     protected async override void OnInitialized()
     {
         // For now, hardcoded JSON
-        var json = @"
-[
-  {
-    ""alertType"": ""HighHeartRate"",
-    ""timestamp"": ""2025-06-23T13:10:17Z"",
-    ""triggeredBy"": {
-      ""heartRate"": 128,
-      ""spo2"": 88,
-      ""respiratoryRate"": 20,
-      ""bloodGlucose"": 115
-    },
-    ""message"": ""High Heart Rate and Low SpO2 detected.""
-  },
-  {
-    ""alertType"": ""LowSpO2"",
-    ""timestamp"": ""2025-06-24T09:22:00Z"",
-    ""triggeredBy"": {
-      ""spo2"": 85
-    },
-    ""message"": ""Low SpO2 alert.""
-  }
-]
-";
+//         var json = @"
+// [
+//   {
+//     ""alertType"": ""HighHeartRate"",
+//     ""timestamp"": ""2025-06-23T13:10:17Z"",
+//     ""triggeredBy"": {
+//       ""heartRate"": 128,
+//       ""spo2"": 88,
+//       ""respiratoryRate"": 20,
+//       ""bloodGlucose"": 115
+//     },
+//     ""message"": ""High Heart Rate and Low SpO2 detected.""
+//   },
+//   {
+//     ""alertType"": ""LowSpO2"",
+//     ""timestamp"": ""2025-06-24T09:22:00Z"",
+//     ""triggeredBy"": {
+//       ""spo2"": 85
+//     },
+//     ""message"": ""Low SpO2 alert.""
+//   }
+// ]
+// ";
 
-        var options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
+        // var options = new JsonSerializerOptions
+        // {
+        //     PropertyNameCaseInsensitive = true
+        // };
 
        // alerts = JsonSerializer.Deserialize<List<AlertModel>>(json, options);
               
         //replace above tline with this -- alerts = await Http.GetFromJsonAsync<List<AlertModel>>("api/alerts/current-user");
        var patientId = await SecureStorage.GetItemAsync("vh_patient_id");
-       var _httpClient = MedPlumHttpClient.Client;
-        alerts = await _httpClient.GetFromJsonAsync<List<AlertModel>>("/api/Medplum/alarm-notification/{patientId}");
+       
+       alerts = await MedPlumHttpClient.Client.GetFromJsonAsync<List<AlertModel>>($"/api/Medplum/alarm-notification/{patientId}");
 
         if (alerts == null)
         {
