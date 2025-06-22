@@ -165,10 +165,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var emailId = "matrix@ai.com"; //await _secureStorage.GetItemAsync("user_id");
+        var emailId =  _secureStorage.GetItemAsync("user_id");
         _httpClient = MedPlumHttpClient.Client;
         profile = await _httpClient.GetFromJsonAsync<PatientProfileInput>($"api/medplum/patient-full-profile/{emailId}");
-        profile.PatientId = "019679d5-7564-763e-ba0b-2574c060329d";
         if (profile?.PatientId != null)
         {
             var labResults = await _httpClient.GetFromJsonAsync<LabResultResponse>($"/api/Medplum/patient-lab-results/{profile.PatientId}");
