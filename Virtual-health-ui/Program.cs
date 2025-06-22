@@ -12,6 +12,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<SecureStorageService>();
 builder.Services.AddScoped<MedPlumAPIService>();
+builder.Services.AddScoped<AlertService>();
 
 // Register multiple HttpClient instances manually
 builder.Services.AddScoped<MedplumWrapperApiHttpClient>(sp => new MedplumWrapperApiHttpClient(

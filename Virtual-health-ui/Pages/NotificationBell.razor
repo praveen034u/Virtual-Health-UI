@@ -1,0 +1,97 @@
+﻿@using VirtualHealth.UI.Services
+@using VirtualHealth.UI.Models
+@inject AlertService AlertService
+@inject NavigationManager NavManager
+
+<div class="d-flex align-items-center justify-content-end flex-wrap" style="min-width: 0;">
+    <div class="notification-bell-wrapper me-2">
+        <button class="btn btn-light border rounded-circle position-relative p-2" @onclick="ToggleDropdown"
+                style="width: 40px; height: 40px;">
+            <i class="bi bi-bell-fill fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                  style="font-size: 0.65rem; padding: 4px 6px; z-index: 10; min-width: 24px;">
+                @((alerts?.Count ?? 0) > 99 ? "99+" : alerts?.Count ?? 0)
+            </span>
+        </button>
+
+        @if (showDropdown)
+        {
+            <div class="dropdown-menu dropdown-menu-end show shadow-sm border-0 mt-2"
+                 style="min-width: 320px; z-index: 1055;">
+                <div class="dropdown-header fw-bold text-primary py-2 px-3 border-bottom">
+                    <i class="bi bi-bell text-warning me-1"></i> Recent Alerts
+                </div>
+
+                @if (alerts != null && alerts.Count > 0)
+                {
+                    @foreach (var alert in alerts.Take(3))
+                    {
+                        <div class="dropdown-item small px-3 py-2 text-wrap">
+                            <div class="fw-semibold">
+                                @GetAlertIcon(alert.AlertType) <strong>@alert.AlertType</strong>
+                            </div>
+                            <div class="text-muted small">
+                                @alert.Timestamp.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")
+                            </div>
+                            <div>@alert.Message</div>
+                        </div>
+                    }
+
+                    <div class="dropdown-item text-center border-top">
+                        <a href="/alerts" class="text-decoration-none fw-bold text-primary small">View All →</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="dropdown-item text-muted small px-3 py-2">No recent alerts</div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<AlertModel>? alerts;
+    private bool showDropdown = false;
+    private System.Timers.Timer refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAlertsAsync();
+
+        refreshTimer = new System.Timers.Timer(60000); // 60 sec
+        refreshTimer.Elapsed += async (_, __) =>
+        {
+            await InvokeAsync(LoadAlertsAsync);
+            StateHasChanged();
+        };
+        refreshTimer.Start();
+    }
+
+    private async Task LoadAlertsAsync()
+    {
+        alerts = await AlertService.GetAlertsAsync();
+    }
+
+    private void ToggleDropdown() => showDropdown = !showDropdown;
+    private void ShowDropdown() => showDropdown = true;
+    private void HideDropdown() => showDropdown = false;
+
+    private string GetAlertIcon(string type)
+    {
+        var lower = type?.ToLower() ?? "";
+        return lower switch
+        {
+            "heartrate" or "highheartrate" => "💓",
+            "spo2" or "lowspo2" => "🌬️",
+            "emergency" => "🚨",
+            _ => "🔔"
+        };
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Stop();
+        refreshTimer?.Dispose();
+    }
+}

@@ -1,7 +1,10 @@
+@using VirtualHealth.UI.Pages
+@using VirtualHealth.UI.Services
 
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
 @inject SecureStorageService SecureStorage
+@inject AlertService AlertService
 
 <div class="container-fluid">
     <div class="row">
@@ -13,6 +16,7 @@
     
         <div class="col-md-10 col-12">
             <div class="top-row px-3 py-2 d-flex justify-content-end align-items-center shadow-sm bg-white">
+                <NotificationBell />
                 <LoginDisplay />
                 <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="ms-3">About</a>
             </div>
@@ -25,6 +29,7 @@
     {
         <main>
             <div class="top-row px-4 d-flex justify-content-end align-items-center gap-3">
+               <NotificationBell />
                 <LoginDisplay />
                 <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
             </div>

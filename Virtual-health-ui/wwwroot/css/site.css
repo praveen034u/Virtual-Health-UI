@@ -14,6 +14,30 @@
         transform: translateY(0);
     }
 }
+.badge-pill {
+    border-radius: 50%;
+    padding: 0.4em 0.6em;
+    font-size: 0.75rem;
+}
+.notification-bell-wrapper {
+    display: flex;
+    flex-shrink: 0;
+    min-width: 40px;
+    max-width: 50px;
+    justify-content: center;
+    position: relative;
+}
+
+@media (max-width: 576px) {
+    .notification-bell-wrapper {
+        margin-right: 1rem;
+    }
+
+    .dropdown-menu {
+        min-width: 90vw !important;
+    }
+}
+
 
 .hero-gradient {
     background: linear-gradient(135deg, #004e92, #000428);

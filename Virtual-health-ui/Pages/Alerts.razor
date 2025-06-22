@@ -1,9 +1,7 @@
 ﻿@page "/alerts"
-
-@using System.Text.Json
-@using System.Text.Json.Serialization
-@inject MedplumWrapperApiHttpClient MedPlumHttpClient
-@inject SecureStorageService SecureStorage
+@using VirtualHealth.UI.Models
+@using VirtualHealth.UI.Services
+@inject AlertService AlertService
 
 <h3 class="text-primary mt-3 mb-4">🔔 Patient Alert Dashboard</h3>
 
@@ -30,17 +28,30 @@ else
             @foreach (var alert in alerts)
             {
                 <tr>
-                    <td><span class="badge @GetBadgeClass(alert.AlertType)">@alert.AlertType</span></td>
+                    <td>
+                        <span class="badge @GetBadgeClass(alert.AlertType)">
+                            @alert.AlertType
+                        </span>
+                    </td>
                     <td>@alert.Timestamp.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</td>
                     <td>
-                        <ul class="mb-0 ps-3">
-                            @foreach (var kv in alert.TriggeredBy)
+                        <ul class="mb-0 ps-3 small">
+                            @foreach (var key in new[] { "heartRate", "spo2", "respiratoryRate", "bloodGlucose" })
                             {
-                                <li><strong>@kv.Key:</strong> @kv.Value</li>
+                                if (alert.TriggeredBy != null &&
+                                alert.TriggeredBy.TryGetValue(key, out var value) &&
+                                value.HasValue)
+                                {
+                                    <li>
+                                        <strong>@ToLabel(key):</strong> @value
+                                    </li>
+                                }
                             }
                         </ul>
                     </td>
-                    <td>@alert.Message</td>
+                    <td>
+                        <span class="text-dark fw-semibold">@alert.Message</span>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -50,73 +61,26 @@ else
 @code {
     private List<AlertModel> alerts;
 
-    protected async override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // For now, hardcoded JSON
-//         var json = @"
-// [
-//   {
-//     ""alertType"": ""HighHeartRate"",
-//     ""timestamp"": ""2025-06-23T13:10:17Z"",
-//     ""triggeredBy"": {
-//       ""heartRate"": 128,
-//       ""spo2"": 88,
-//       ""respiratoryRate"": 20,
-//       ""bloodGlucose"": 115
-//     },
-//     ""message"": ""High Heart Rate and Low SpO2 detected.""
-//   },
-//   {
-//     ""alertType"": ""LowSpO2"",
-//     ""timestamp"": ""2025-06-24T09:22:00Z"",
-//     ""triggeredBy"": {
-//       ""spo2"": 85
-//     },
-//     ""message"": ""Low SpO2 alert.""
-//   }
-// ]
-// ";
-
-        // var options = new JsonSerializerOptions
-        // {
-        //     PropertyNameCaseInsensitive = true
-        // };
-
-       // alerts = JsonSerializer.Deserialize<List<AlertModel>>(json, options);
-              
-        //replace above tline with this -- alerts = await Http.GetFromJsonAsync<List<AlertModel>>("api/alerts/current-user");
-       var patientId = await SecureStorage.GetItemAsync("vh_patient_id");
-       
-       alerts = await MedPlumHttpClient.Client.GetFromJsonAsync<List<AlertModel>>($"/api/Medplum/alarm-notification/{patientId}");
-
-        if (alerts == null)
-        {
-            alerts = new List<AlertModel>();
-        }
+        alerts = await AlertService.GetAlertsAsync();
     }
 
-    private class AlertModel
-    {
-        [JsonPropertyName("alertType")]
-        public string AlertType { get; set; }
-
-        [JsonPropertyName("timestamp")]
-        public DateTime Timestamp { get; set; }
-
-        [JsonPropertyName("message")]
-        public string Message { get; set; }
-
-        [JsonPropertyName("triggeredBy")]
-        public Dictionary<string, double> TriggeredBy { get; set; }
-    }
-
-    private string GetBadgeClass(string alertType)
-    {
-        return alertType switch
+    private string GetBadgeClass(string type) =>
+        type?.ToLower() switch
         {
-            "HighHeartRate" => "bg-danger",
-            "LowSpO2" => "bg-warning",
+            "heartrate" or "highheartrate" => "bg-danger",
+            "spo2" or "lowspo2" => "bg-warning",
             _ => "bg-secondary"
         };
-    }
+
+    private string ToLabel(string key) =>
+        key.ToLowerInvariant() switch
+        {
+            "heartrate" => "HR",
+            "spo2" => "SpO₂",
+            "respiratoryrate" => "Resp",
+            "bloodglucose" => "Glucose",
+            _ => key
+        };
 }
