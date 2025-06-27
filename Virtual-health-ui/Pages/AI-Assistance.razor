@@ -46,7 +46,7 @@
 	{
 		<div class="mt-4 p-4 border rounded bg-light fade-in">
 			<h5 class="text-success">AI Response:</h5>
-			<div class="mb-0" style="white-space: pre-line;" @key="aiResponse">
+			<div class="mb-0 ai-response-html" style="white-space: pre-line;" @key="aiResponse">
 				@((MarkupString)aiResponse)
 			</div>
 		</div>
@@ -88,46 +88,77 @@
 
 		isLoading = true;
 		aiResponse = string.Empty;
+
 		var vh_patientId = await _secureStorage.GetItemAsync("vh_patient_id");
+
+		// ⚠️ TEMP: fallback for local testing only – remove before production
+		if (string.IsNullOrWhiteSpace(vh_patientId))
+			vh_patientId = "01978609-4506-72a9-a00e-8083bbf66207"; // TEMP TEST ID
+
+
 
 		try
 		{
-			// var response = await _httpClient.PostAsJsonAsync("/api/Medplum/generate", new { prompt = userPrompt, patientId = vh_patientId });
-			
-			// if (!response.IsSuccessStatusCode)
-			// {
-			// 	Console.WriteLine("System error occured, please retry");
-			// 	return;
-			// }
+			var requestData = new
+			{
+				prompt = userPrompt,
+				patientId = vh_patientId
+			};
 
-			// var jsonResponse = await response.Content.ReadAsStringAsync();
+			var response = await _httpClient.PostAsJsonAsync("/api/Medplum/generate", requestData);
 
-			// ExtractDivHtml(jsonResponse);
-			aiResponse = "<div><p>Hello! Let's take a look at your blood pressure readings from the past week.</p><p><strong>Systolic Blood Pressure Trend:</strong></p><ul>  <li>Your systolic blood pressure readings over the last 7 days have ranged from <strong>124 mmHg to 134 mmHg</strong>.</li>  <li>The average systolic reading for the week is approximately <strong>129 mmHg</strong>.</li></ul><p><strong>Diastolic Blood Pressure Trend:</strong></p><ul>  <li>Your diastolic blood pressure readings have ranged from <strong>78 mmHg to 85 mmHg</strong> over the past 7 days.</li>  <li>The average diastolic reading for the week is approximately <strong>81.3 mmHg</strong>.</li></ul><p><strong>Overall Assessment:</strong></p><p>Your blood pressure readings this past week show some fluctuation, which is normal. However, we are seeing a trend where both your systolic and diastolic pressures are frequently in the elevated range, particularly towards the higher end of your weekly readings.</p><p>Given your history of prehypertension and your current management through lifestyle changes, it's important to continue monitoring closely. While you are not currently in the hypertensive range, these readings suggest that the lifestyle adjustments you are making are crucial for maintaining healthy blood pressure levels and preventing progression to hypertension.</p><p>I recommend continuing with your current lifestyle modifications, such as healthy eating, regular physical activity, and stress management. It would also be beneficial to discuss these trends with your healthcare provider at your next appointment to ensure your current management strategy remains optimal. They may wish to review your readings and provide further guidance.</p></div>";
+			if (!response.IsSuccessStatusCode)
+			{
+				aiResponse = "<div class='text-danger'><strong>Sorry:</strong> AI assistant couldn't process your question. Please try again later.</div>";
+				return;
+			}
+
+			var result = await response.Content.ReadFromJsonAsync<AIResponse>();
+			aiResponse = ExtractDivHtml(result?.htmlResponse);
 		}
 		catch (Exception ex)
 		{
-			aiResponse = $"Error: {ex.Message}";
+			aiResponse = $"<div class='text-danger'>Error: {ex.Message}</div>";
 		}
-
-		isLoading = false;
+		finally
+		{
+			isLoading = false;
+		}
 	}
 
-	public static string ExtractDivHtml(string jsonResponse)
+
+	public static string ExtractDivHtml(string rawJson)
 	{
-		var doc = JsonDocument.Parse(jsonResponse);
-		var rawHtml = doc.RootElement.GetProperty("response").GetString();
+		if (string.IsNullOrWhiteSpace(rawJson))
+			return "<div><p>No response received from AI.</p></div>";
 
-		// Remove Markdown code block markers and \n
-		var cleaned = Regex.Replace(rawHtml, @"```html|```", string.Empty)
-									.Replace("\\n", string.Empty)
-									.Trim();
+		try
+		{
+			// Parse the JSON and get the wrapped response string
+			var doc = JsonDocument.Parse(rawJson);
+			var aiWrapped = doc.RootElement.GetProperty("response").GetString();
 
-		return cleaned;
+			// Clean formatting artifacts like ```html, \n, and escaped quotes
+			var cleaned = Regex.Replace(aiWrapped ?? "", @"```html|```", string.Empty)
+				.Replace("\\n", "\n")
+				.Replace("\\\"", "\"")
+				.Trim();
+
+			// Optional: remove repeated blank lines (2+ newlines)
+			cleaned = Regex.Replace(cleaned, @"(\n\s*){2,}", "\n");
+
+			return cleaned;
+		}
+		catch
+		{
+			return "<div><p>Unable to parse AI response.</p></div>";
+		}
 	}
 
 	public class AIResponse
 	{
-		public string Response { get; set; } = string.Empty;
+		public string htmlResponse { get; set; } = string.Empty;
 	}
+
+
 }
