@@ -27,23 +27,24 @@
     justify-content: center;
     position: relative;
 }
+.ai-response-html p {
+    margin-bottom: 0.4rem !important;
+}
+
 .ai-response-html ul {
-    margin-left: 1rem;
+    margin-top: 0.5rem;
     margin-bottom: 0.5rem;
+    padding-left: 1.2rem;
 }
 
 .ai-response-html li {
-    margin-bottom: 0.25rem; /* Optional: tighter list items */
-}
-
-.ai-response-html p {
-    margin-bottom: 0.4rem; /* Reduced from 0.75rem */
+    margin-bottom: 0.3rem;
 }
 
 .ai-response-html h3 {
+    margin-top: 1rem;
+    margin-bottom: 0.6rem;
     color: #0d6efd;
-    margin-top: 0.8rem; /* Reduced top margin */
-    margin-bottom: 0.5rem; /* Add bottom margin to group tightly */
 }
 
 
