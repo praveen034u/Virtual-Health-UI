@@ -1,12 +1,12 @@
-window.showAuth0Login = () => {
+window.showAuth0Login = (config) => {
     const container = document.getElementById("auth0-login-container");
 
     if (container && !container.hasChildNodes()) {
-        var lock = new Auth0Lock('V9Una2guriD6USXmVHCn4LVRZX9Ao479', 'dev-jbrriuc5vyjmiwtx.us.auth0.com', {
+        var lock = new Auth0Lock(config.clientId, config.domain, {
             auth: {
                 redirect: false,
                 responseType: 'token id_token',
-                audience: 'https://dev-jbrriuc5vyjmiwtx.us.auth0.com/userinfo',
+                audience: config.audience,
                 scope: 'openid profile email'
             }
         });
@@ -21,8 +21,6 @@ window.showAuth0Login = () => {
                 sessionStorage.setItem("access_token", authResult.accessToken);
                 sessionStorage.setItem("id_token", authResult.idToken);
                 sessionStorage.setItem("user_profile", JSON.stringify(profile));
-
-                console.log("Auth success, invoking Blazor method...");
 
                 DotNet.invokeMethodAsync("VirtualHealth.UI", "OnAuthSuccess")
                     .catch(err => console.error("Blazor callback failed", err));

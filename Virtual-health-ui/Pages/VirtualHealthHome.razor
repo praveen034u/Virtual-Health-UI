@@ -4,6 +4,7 @@
 @inject NavigationManager Navigation
 @inject SecureStorageService SecureStorage
 @inject MedplumWrapperApiHttpClient MedPlumHttpClient
+@inject Microsoft.Extensions.Options.IOptions<VirtualHealth.UI.Models.Auth0Settings> Auth0Options
 
 <PageTitle>VirtualHealthHome</PageTitle>
 
@@ -75,6 +76,9 @@
     private static SecureStorageService _secureStorage;
     private static IJSRuntime _jsRuntime;
     private static HttpClient _httpClient;
+    private string ClientId => Auth0Options.Value.ClientId;
+    private string Domain => Auth0Options.Value.Domain;
+    private string Audience => Auth0Options.Value.Audience;
 
     protected override void OnInitialized()
     {
@@ -88,7 +92,13 @@
 
     private async Task ShowLoginWidget()
     {
-        await _jsRuntime.InvokeVoidAsync("showAuth0Login");
+        //await _jsRuntime.InvokeVoidAsync("showAuth0Login");
+        await _jsRuntime.InvokeVoidAsync("showAuth0Login", new
+        {
+            domain = Domain,
+            clientId = ClientId,
+            audience = Audience
+        });
     }
 
     [JSInvokable]
