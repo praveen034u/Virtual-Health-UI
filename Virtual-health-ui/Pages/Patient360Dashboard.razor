@@ -182,7 +182,6 @@ else
         }
 
         _httpClient = MedPlumHttpClient.Client;
-        //profile = await _httpClient.GetFromJsonAsync<PatientProfileInput>($"api/medplum/patient-full-profileByPatientId/{patientId}");
 
         if (patientId != null)
         {
@@ -213,10 +212,9 @@ else
         isSummaryLoading = true;
         personalizedHealthHtml = string.Empty;
 
+		// Retrieve patient ID from secure storage
         var vh_patientId = await SecureStorage.GetItemAsync("vh_patient_id");
-        if (string.IsNullOrWhiteSpace(vh_patientId))
-            vh_patientId = "01978609-4506-72a9-a00e-8083bbf66207"; // for local testing
-
+        
         try
         {
             var requestData = new
@@ -248,6 +246,7 @@ else
             StateHasChanged();
         }
     }
+
     private List<LabResultItem> GetDistinctLatestRecords(List<LabResultItem> items) =>
         items.GroupBy(i => i.CodeDisplay).Select(g => g.OrderByDescending(i => i.EffectiveDateTime).First()).ToList();
 
