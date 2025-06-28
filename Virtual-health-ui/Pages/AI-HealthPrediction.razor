@@ -152,17 +152,17 @@
     protected override async Task OnInitializedAsync()
     {
         patientId = await SecureStorage.GetItemAsync("vh_patient_id");
-        //var response = await MedPlumHttpClient.Client.GetFromJsonAsync<HealthPredictionResult>($"/api/Medplum/generate/{patientId}");
+        var response = await MedPlumHttpClient.Client.GetFromJsonAsync<HealthPredictionResult>($"/api/Medplum/health-prediction-by-observations/{patientId}");
         // Mocked prediction data
-        predictionResult = new HealthPredictionResult
-            {
-                Diabetes_Probability = 0.4658,
-                Heart_Disease_Probability = 0.7029,
-                Sleep_Apnea_Probability = 0.5560,
-                Hypertension_Probability = 0.1092
-            };
-
-       // predictionResult = response?? new HealthPredictionResult();
+        // predictionResult = new HealthPredictionResult
+        //     {
+        //          Diabetes_Probability = 0.4658,
+        //         Heart_Disease_Probability = 0.7029,
+        //         Sleep_Apnea_Probability = 0.5560,
+        //         Hypertension_Probability = 0.1092
+        //     };
+ 
+        predictionResult = response?? new HealthPredictionResult();
     }
 
     private string GetVitalsApiUrl() =>
@@ -324,9 +324,9 @@
 
     public class HealthPredictionResult
     {
-        public double Diabetes_Probability { get; set; }
-        public double Heart_Disease_Probability { get; set; }
-        public double Sleep_Apnea_Probability { get; set; }
-        public double Hypertension_Probability { get; set; }
+        public string Diabetes_Probability { get; set; }
+        public string Heart_Disease_Probability { get; set; }
+        public string Sleep_Apnea_Probability { get; set; }
+        public string Hypertension_Probability { get; set; }
     }
 }
