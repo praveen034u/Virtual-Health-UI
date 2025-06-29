@@ -48,6 +48,9 @@
     margin-bottom: 0.6rem;
     color: #0d6efd;
 }
+.prediction-results {
+    font-size: 14px;
+}
 
 
 @media (max-width: 576px) {
