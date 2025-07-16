@@ -1,20 +1,24 @@
 ﻿@using VirtualHealth.UI.Services
 @using VirtualHealth.UI.Models
+@inject NavigationManager Navigation
 @inject AlertService AlertService
 @inject AlertPanelStateService AlertPanelState
 
-<button class="btn btn-light border rounded-circle position-relative p-2 notification-bell-wrapper"
-        style="width: 40px; height: 40px;" @onclick="ToggleDropdown">
-    <i class="bi bi-bell-fill fs-5"></i>
+@if (!Navigation.Uri.Contains("VirtualHealthhome") && !Navigation.Uri.EndsWith("/") && !Navigation.Uri.EndsWith("/#"))
+{
+    <button class="btn btn-light border rounded-circle position-relative p-2 notification-bell-wrapper"
+    style="width: 40px; height: 40px;" @onclick="ToggleDropdown">
+        <i class="bi bi-bell-fill fs-5"></i>
 
-    @if (alerts?.Count > 0)
-    {
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-              style="font-size: 0.65rem; padding: 4px 6px; z-index: 10; min-width: 24px;">
-            @((alerts.Count > 99) ? "99+" : alerts.Count.ToString())
-        </span>
-    }
-</button>
+        @if (alerts?.Count > 0)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            style="font-size: 0.65rem; padding: 4px 6px; z-index: 10; min-width: 24px;">
+                @((alerts.Count > 99) ? "99+" : alerts.Count.ToString())
+            </span>
+        }
+    </button>
+}
 
 @code {
     private List<AlertModel>? alerts;
