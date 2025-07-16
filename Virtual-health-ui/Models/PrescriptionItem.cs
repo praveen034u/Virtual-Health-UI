@@ -2,10 +2,12 @@
 {
     public class PrescriptionItem
     {
-        public string MedicineName { get; set; }
-        public string Dosage { get; set; }
-        public string Frequency { get; set; } // Example: "Twice a day"
-        public string Duration { get; set; }  // Optional: e.g. "5 days"
+        public string MedicationName { get; set; } = "";
+        public string DosageText { get; set; } = "";          // e.g. "Take 1 tablet daily"
+        public string Frequency { get; set; } = "";           // derived from dosage text
+        public string Instructions { get; set; } = "";        // optional notes
+        public DateTime StartDate { get; set; }               // from authoredOn
     }
+
 
 }

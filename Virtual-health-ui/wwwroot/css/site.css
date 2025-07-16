@@ -2,6 +2,85 @@
 .fade-in {
     animation: fadeIn 1s ease-in;
 }
+.accordion-button.lab {
+    background: #1976d2;
+    color: #fff;
+}
+
+.accordion-button.vitals {
+    background: #e53935;
+    color: #fff;
+}
+
+.accordion-button.mental {
+    background: #03a9f4;
+    color: #fff;
+}
+
+.accordion-button.imaging {
+    background: #757575;
+    color: #fff;
+}
+
+.accordion-button.lifestyle {
+    background: #607d8b;
+    color: #fff;
+}
+
+.accordion-button.rx {
+    background: #4caf50;
+    color: #fff;
+}
+
+.accordion-button::after {
+    filter: invert(1);
+}
+/* white chevron */
+
+.card-header.rx {
+    background-color: #4caf50; /* lighter green */
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.card-header.lab {
+    background-color: #1976d2; /* medium-blue */
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.card-header.vitals {
+    background-color: #e53935; /* soft red */
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.card-header.mental {
+    background-color: #03a9f4; /* sky blue */
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.card-header.imaging {
+    background-color: #757575; /* medium gray */
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.card-header.lifestyle {
+    background-color: #607d8b; /* blue gray */
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.prescription-notes {
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    line-height: 1.4;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
 
 @keyframes fadeIn {
     from {
