@@ -174,6 +174,11 @@ else
     protected override async Task OnInitializedAsync()
     {
         var patientId = await SecureStorage.GetItemAsync("vh_patient_id");
+        // ⚠️ TEMP: fallback for local testing only – remove before production
+        if (string.IsNullOrWhiteSpace(patientId))
+            patientId = "01978609-4506-72a9-a00e-8083bbf66207"; // TEMP TEST ID
+
+
         if (string.IsNullOrEmpty(patientId))
         {
             Console.WriteLine("Profile not found, redirecting to Create Profile.");
@@ -214,13 +219,22 @@ else
 
 		// Retrieve patient ID from secure storage
         var vh_patientId = await SecureStorage.GetItemAsync("vh_patient_id");
-        
+        var userId = await SecureStorage.GetUserIdAsync();
+
+        // ⚠️ TEMP: fallback for local testing only – remove before production
+        if (string.IsNullOrWhiteSpace(vh_patientId))
+            vh_patientId = "01978609-4506-72a9-a00e-8083bbf66207"; // TEMP TEST ID
+
+        if (string.IsNullOrWhiteSpace(userId))
+            userId = "richie1@gmail.com";
+    
         try
         {
             var requestData = new
             {
                 prompt = "Give me a personalized health summary",
-                patientId = vh_patientId
+                patientId = vh_patientId,
+                userId = userId
             };
 
             // ✅ Call correct endpoint (under Medplum controller if that’s where /generate is hosted)

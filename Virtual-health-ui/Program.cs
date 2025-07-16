@@ -19,6 +19,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<SecureStorageService>();
 builder.Services.AddScoped<MedPlumAPIService>();
 builder.Services.AddScoped<AlertService>();
+builder.Services.AddSingleton<AlertPanelStateService>();
 
 // Read API base URL from config.json in wwwroot
 var apiBaseUrl = configuration["ApiBaseUrl"];

@@ -1,49 +1,125 @@
+﻿@using VirtualHealth.UI.Models
 @using VirtualHealth.UI.Pages
 @using VirtualHealth.UI.Services
-
 @inherits LayoutComponentBase
+
 @inject NavigationManager Navigation
-@inject SecureStorageService SecureStorage
 @inject AlertService AlertService
+@inject AlertPanelStateService AlertPanelState
+@inject IJSRuntime JSRuntime
 
 <div class="container-fluid">
     <div class="row">
-         @if (!Navigation.Uri.Contains("VirtualHealthhome") && !Navigation.Uri.EndsWith("/") && !Navigation.Uri.EndsWith("/#"))
-    {
-        <div class="col-md-2 bg-light p-0 shadow-sm d-none d-md-block">
+        <div class="col-md-2 d-none d-md-block p-0 bg-light shadow-sm">
             <NavMenu />
         </div>
-    
-        <div class="col-md-10 col-12">
-            <div class="top-row px-3 py-2 d-flex justify-content-end align-items-center shadow-sm bg-white">
+
+        <div class="col-md-10 col-12 position-relative">
+            <div class="top-row px-3 py-2 d-flex justify-content-end align-items-center bg-white shadow-sm">
                 <NotificationBell />
                 <LoginDisplay />
-                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="ms-3">About</a>
             </div>
+
+            <div id="alertPanel"
+                 class="alert-dropdown-panel position-absolute bg-white shadow p-3 rounded"
+                 style="top:60px;right:20px;z-index:1050;display:@(AlertPanelState.IsVisible ? "block" : "none");">
+                @if (alerts == null)
+                {
+                    <p><i class="bi bi-hourglass-split text-muted"></i> Loading alerts...</p>
+                }
+                else if (!alerts.Any())
+                {
+                    <p><i class="bi bi-hourglass-split text-muted"></i> Loading alerts...</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr><th>Type</th><th>Time</th><th>Message</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in alerts.Take(5))
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="badge @GetBadgeClass(a.AlertType)">
+                                            @GetIcon(a.AlertType) @a.AlertType
+                                        </span>
+                                    </td>
+                                    <td>@a.Timestamp.ToLocalTime().ToString("hh:mm tt")</td>
+                                    <td>@a.Message</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
             <div class="main-content px-3 pt-3">
                 @Body
             </div>
         </div>
-    }
-    else
-    {
-        <main>
-            <div class="top-row px-4 d-flex justify-content-end align-items-center gap-3">
-               <NotificationBell />
-                <LoginDisplay />
-                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-            </div>
-
-            <article class="content px-4">
-                @Body
-            </article>
-        </main>
-    }
     </div>
 </div>
 
 @code {
+    private List<AlertModel> alerts = new();
+    private DotNetObjectReference<MainLayout>? objRef;
+
     protected override async Task OnInitializedAsync()
     {
+        AlertPanelState.OnChange += OnPanelStateChanged;
+    }
+
+    private async Task OnPanelStateChanged()
+    {
+        // Step 1: Show panel instantly (even if alerts list is old/empty)
+        StateHasChanged();
+
+        // Step 2: If becoming visible, refresh alerts in background
+        if (AlertPanelState.IsVisible)
+        {
+            alerts = await AlertService.GetAlertsAsync();
+            StateHasChanged(); // re-render with latest alerts
+        }
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("alertComponent.registerOutsideClick", "alertPanel", objRef);
+        }
+    }
+
+
+    [JSInvokable]
+    public void CloseAlerts()
+    {
+        AlertPanelState.Hide();
+        StateHasChanged();
+    }
+
+    string GetBadgeClass(string t) => t?.ToLower() switch
+    {
+        "heartrate" or "highheartrate" => "bg-danger",
+        "spo2"      or "lowspo2"       => "bg-warning",
+        _                               => "bg-secondary"
+    };
+
+    string GetIcon(string t) => t?.ToLower() switch
+    {
+        "heartrate" or "highheartrate" => "💓",
+        "spo2"      or "lowspo2"       => "🌬️",
+        "emergency"                    => "🚨",
+        _                               => "🔔"
+    };
+
+    public void Dispose()
+    {
+        AlertPanelState.OnChange -= OnPanelStateChanged;
+        objRef?.Dispose();
     }
 }

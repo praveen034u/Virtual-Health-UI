@@ -89,20 +89,24 @@
 		isLoading = true;
 		aiResponse = string.Empty;
 
-		var vh_patientId = await _secureStorage.GetItemAsync("vh_patient_id");
+		// Retrieve patient ID from secure storage
+		var vh_patientId = await SecureStorage.GetItemAsync("vh_patient_id");
+		var userId = await SecureStorage.GetUserIdAsync();
 
 		// ⚠️ TEMP: fallback for local testing only – remove before production
 		if (string.IsNullOrWhiteSpace(vh_patientId))
 			vh_patientId = "01978609-4506-72a9-a00e-8083bbf66207"; // TEMP TEST ID
 
-
+		if (string.IsNullOrWhiteSpace(userId))
+			userId = "richie1@gmail.com";
 
 		try
 		{
 			var requestData = new
 			{
 				prompt = userPrompt,
-				patientId = vh_patientId
+				patientId = vh_patientId,
+				userId = userId
 			};
 
 			var response = await _httpClient.PostAsJsonAsync("/api/Medplum/generate", requestData);

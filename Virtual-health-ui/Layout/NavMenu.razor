@@ -1,3 +1,5 @@
+@using VirtualHealth.UI.Services
+@inject AlertPanelStateService AlertState
 
 <div class="sidebar bg-white vh-100 border-end shadow-sm" style="width: 95%;">
     <div class="p-3">
@@ -15,7 +17,7 @@
             <NavLink class="nav-link text-dark mb-2" href="user-profile">
                 <i class="bi bi-person-lines-fill me-2"></i>Update Profile
             </NavLink>
-            <a class="nav-link text-dark mb-2" @onclick="ToggleAlerts" style="cursor:pointer;">
+            <a class="nav-link text-dark mb-2" @onclick="AlertState.Toggle" style="cursor:pointer;">
                 <i class="bi bi-bell-fill me-2"></i> Patient Alerts
             </a>
 
