@@ -2,28 +2,34 @@
 .fade-in {
     animation: fadeIn 1s ease-in;
 }
+
+.accordion-button.rx {
+    background: linear-gradient(135deg, #43cea2, #185a9d); /* Green-Blue */
+    color: #fff;
+}
+
 .accordion-button.lab {
-    background: #1976d2;
+    background: linear-gradient(135deg, #6a11cb, #2575fc); /* Purple-Blue */
     color: #fff;
 }
 
 .accordion-button.vitals {
-    background: #e53935;
+    background: linear-gradient(135deg, #ff512f, #dd2476); /* Orange-Pink */
     color: #fff;
 }
 
 .accordion-button.mental {
-    background: #03a9f4;
+    background: linear-gradient(135deg, #00c6ff, #0072ff); /* Sky Blue */
     color: #fff;
 }
 
 .accordion-button.imaging {
-    background: #757575;
+    background: linear-gradient(135deg, #616161, #9bc5c3); /* Grey-Teal */
     color: #fff;
 }
 
 .accordion-button.lifestyle {
-    background: #607d8b;
+    background: linear-gradient(135deg, #3a6073, #16222a); /* Deep Blue-Grey */
     color: #fff;
 }
 
