@@ -17,23 +17,24 @@
             <div class="col-md-2 bg-light p-0 shadow-sm d-none d-md-block">
                 <NavMenu />
             </div>
-        }
+
             <div class="col-md-10 col-12 position-relative">
-                <LoginDisplay />
-                <NotificationBell />
-                 <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="ms-3">About</a>
-            </div>
+                <div class="top-row px-3 py-2 d-flex justify-content-end align-items-center shadow-sm bg-white">
+                    <LoginDisplay />
+                    <NotificationBell />
+                    <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="ms-3">About</a>
+                </div>
 
                 <div id="alertPanel"
                      class="alert-dropdown-panel position-absolute bg-white shadow p-3 rounded"
                      style="top:60px;right:20px;z-index:1050;display:@(AlertPanelState.IsVisible ? "block" : "none");">
-                    @if (alerts == null)
+                    @if (isLoading)
                     {
                         <p><i class="bi bi-hourglass-split text-muted"></i> Loading alerts...</p>
                     }
                     else if (!alerts.Any())
                     {
-                        <p><i class="bi bi-hourglass-split text-muted"></i> Loading alerts...</p>
+                        <p class="mb-0">No alerts available.</p>
                     }
                     else
                     {
@@ -68,8 +69,8 @@
         {
             <main>
                 <div class="top-row px-4 d-flex justify-content-end align-items-center gap-3">
-                    <NotificationBell />
                     <LoginDisplay />
+                    <NotificationBell />
                     <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
                 </div>
 
@@ -78,11 +79,13 @@
                 </article>
             </main>
         }
-       </div>
+    </div>
+</div>
 
 @code {
     private List<AlertModel> alerts = new();
     private DotNetObjectReference<MainLayout>? objRef;
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -91,13 +94,13 @@
 
     private async Task OnPanelStateChanged()
     {
-        // Show immediately
         StateHasChanged();
-
+            isLoading = true;
         if (AlertPanelState.IsVisible)
         {
             alerts = await AlertService.GetAlertsAsync();
-            StateHasChanged(); // Refresh after fetch
+            isLoading = false;
+            StateHasChanged();
         }
     }
 
