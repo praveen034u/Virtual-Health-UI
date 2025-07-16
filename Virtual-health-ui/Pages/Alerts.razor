@@ -30,7 +30,7 @@ else
                 <tr>
                     <td>
                         <span class="badge @GetBadgeClass(alert.AlertType)">
-                            @alert.AlertType
+                            @GetIcon(alert.AlertType) @alert.AlertType
                         </span>
                     </td>
                     <td>@alert.Timestamp.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</td>
@@ -60,7 +60,6 @@ else
 
 @code {
     private List<AlertModel> alerts;
-    private static HttpClient _httpClient;
 
     protected override async Task OnInitializedAsync()
     {
@@ -73,6 +72,15 @@ else
             "heartrate" or "highheartrate" => "bg-danger",
             "spo2" or "lowspo2" => "bg-warning",
             _ => "bg-secondary"
+        };
+
+    private string GetIcon(string type) =>
+        type?.ToLower() switch
+        {
+            "heartrate" or "highheartrate" => "💓",
+            "spo2" or "lowspo2" => "🌬️",
+            "emergency" => "🚨",
+            _ => "🔔"
         };
 
     private string ToLabel(string key) =>
