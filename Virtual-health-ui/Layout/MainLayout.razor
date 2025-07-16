@@ -1,4 +1,5 @@
-﻿@using VirtualHealth.UI.Models
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using VirtualHealth.UI.Models
 @using VirtualHealth.UI.Pages
 @using VirtualHealth.UI.Services
 
@@ -20,9 +21,20 @@
 
             <div class="col-md-10 col-12 position-relative">
                 <div class="top-row px-3 py-2 d-flex justify-content-end align-items-center shadow-sm bg-white">
-                    <NotificationBell />
-                    <LoginDisplay />
-                    <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="ms-3">About</a>
+                    <AuthorizeView>
+    <Authorized Context="ctx">
+        <span class="me-3 fw-semibold text-dark">👋 Hello, @ctx.User.Identity?.Name!</span>
+        <NotificationBell />
+                            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="ms-3">About</a>
+
+        <button class="btn btn-link text-danger ms-3" @onclick="BeginLogOut">Log out</button>
+    </Authorized>
+    <NotAuthorized>
+@* <VirtualHealthHome /> *@
+<NotificationBell />
+    </NotAuthorized>
+</AuthorizeView>
+
                 </div>
 
                 <div id="alertPanel"
@@ -34,7 +46,7 @@
                     }
                     else if (!alerts.Any())
                     {
-                        <p class="mb-0">No alerts available.</p>
+                        <p><i class="bi bi-hourglass-split text-muted"></i> Loading alerts...</p>
                     }
                     else
                     {
@@ -138,5 +150,15 @@
     {
         AlertPanelState.OnChange -= OnPanelStateChanged;
         objRef?.Dispose();
+    }
+    private async Task BeginLogOut()
+    {
+        var auth0Domain = "dev-jbrriuc5vyjmiwtx.us.auth0.com";
+        var clientId = "V9Una2guriD6USXmVHCn4LVRZX9Ao479";
+        var returnUrl = Navigation.BaseUri; // Ensures return to home after logout
+
+        var logoutUrl = $"https://{auth0Domain}/v2/logout?client_id={clientId}&returnTo={Uri.EscapeDataString(returnUrl)}";
+
+        await JSRuntime.InvokeVoidAsync("logoutAuth0", logoutUrl);
     }
 }
