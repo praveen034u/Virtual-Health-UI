@@ -525,6 +525,15 @@ else
                 .Replace("\\'", "'") // optional
                 .Trim();
 
+            // Exclude all text before the first <div>
+            if (!string.IsNullOrEmpty(cleaned))
+            {
+                var divIndex = cleaned.IndexOf("<div>", StringComparison.OrdinalIgnoreCase);
+                if (divIndex >= 0)
+                {
+                    cleaned = cleaned.Substring(divIndex);
+                }
+            }
             return cleaned ?? "<div><p>Empty AI response.</p></div>";
         }
         catch (Exception ex)

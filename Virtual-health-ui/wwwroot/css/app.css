@@ -127,13 +127,14 @@ code {
     justify-content: center;
 }
 
+
 .modal-content {
-    background-color: #2c6b88;
+    background-color: #f5f5f5;
     padding: 20px;
     border-radius: 10px;
     width: 40%;
     text-align: center;
-    color: white;
+    color: #1a1a1a;
 }
 
     .modal-content input {

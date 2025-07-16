@@ -2,75 +2,46 @@
 .fade-in {
     animation: fadeIn 1s ease-in;
 }
-.accordion-button.lab {
-    background: #1976d2;
-    color: #fff;
-}
-
-.accordion-button.vitals {
-    background: #e53935;
-    color: #fff;
-}
-
-.accordion-button.mental {
-    background: #03a9f4;
-    color: #fff;
-}
-
-.accordion-button.imaging {
-    background: #757575;
-    color: #fff;
-}
-
+/* Unified accordion header with gradient */
+.accordion-button,
+.accordion-button.rx,
+.accordion-button.lab,
+.accordion-button.vitals,
+.accordion-button.mental,
+.accordion-button.imaging,
 .accordion-button.lifestyle {
-    background: #607d8b;
-    color: #fff;
-}
-
-.accordion-button.rx {
-    background: #4caf50;
-    color: #fff;
-}
-
-.accordion-button::after {
-    filter: invert(1);
-}
-/* white chevron */
-
-.card-header.rx {
-    background-color: #4caf50; /* lighter green */
+    background: linear-gradient(90deg, #42a5f5, #7e57c2);
     color: #ffffff;
     font-weight: 600;
+    padding: 0.75rem 1rem;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.3s ease-in-out;
 }
 
-.card-header.lab {
-    background-color: #1976d2; /* medium-blue */
-    color: #ffffff;
-    font-weight: 600;
-}
+    /* Chevron arrow stays white */
+    .accordion-button::after {
+        filter: brightness(0) invert(1);
+    }
 
-.card-header.vitals {
-    background-color: #e53935; /* soft red */
-    color: #ffffff;
-    font-weight: 600;
-}
+    /* Optional hover effect */
+    .accordion-button:hover {
+        opacity: 0.95;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
 
-.card-header.mental {
-    background-color: #03a9f4; /* sky blue */
-    color: #ffffff;
-    font-weight: 600;
-}
-
-.card-header.imaging {
-    background-color: #757575; /* medium gray */
-    color: #ffffff;
-    font-weight: 600;
-}
-
+/* Matching card-header background (for consistency) */
+.card-header,
+.card-header.rx,
+.card-header.lab,
+.card-header.vitals,
+.card-header.mental,
+.card-header.imaging,
 .card-header.lifestyle {
-    background-color: #607d8b; /* blue gray */
+    background: linear-gradient(90deg, #42a5f5, #7e57c2);
     color: #ffffff;
     font-weight: 600;
+    padding: 0.75rem 1rem;
+    border-radius: 6px 6px 0 0;
 }
 
 .prescription-notes {
