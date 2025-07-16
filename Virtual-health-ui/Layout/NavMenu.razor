@@ -15,9 +15,10 @@
             <NavLink class="nav-link text-dark mb-2" href="user-profile">
                 <i class="bi bi-person-lines-fill me-2"></i>Update Profile
             </NavLink>
-            <NavLink class="nav-link text-dark mb-2" href="alerts">
-                <i class="bi bi-bell modal-fill me-2"></i>Patient Alerts
-                </NavLink>
+            <a class="nav-link text-dark mb-2" @onclick="ToggleAlerts" style="cursor:pointer;">
+                <i class="bi bi-bell-fill me-2"></i> Patient Alerts
+            </a>
+
         </nav>
     </div>
 </div>

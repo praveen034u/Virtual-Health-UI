@@ -27,7 +27,6 @@ namespace VirtualHealth.UI.Services
                 var response = await _medplumWrapperApiHttpClient.Client.GetAsync($"/api/Medplum/alarm-notification/{patientId}");
 
                 var raw = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("🔍 Raw Response: " + raw);
 
                 if (!response.IsSuccessStatusCode)
                     return new List<AlertModel>();
@@ -47,7 +46,6 @@ namespace VirtualHealth.UI.Services
         }
     }
 
-    // Wrapper to match JSON: { "message": [ {...}, {...} ] }
     public class AlertResponseWrapper
     {
         public List<AlertModel> Message { get; set; }
