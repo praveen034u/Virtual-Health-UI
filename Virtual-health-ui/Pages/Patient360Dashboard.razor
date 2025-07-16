@@ -14,7 +14,7 @@
 </h3>
 @if (generalLabs == null || vitals == null || imagingResults == null || surveyScore == "-1")
 {
-    <p><em>Loading...</em></p>
+    <img src="ai-loading.gif" alt="Loading AI..." style="height:48px;" />
 }
 else
 {
@@ -234,7 +234,9 @@ else
 
                     @if (isSummaryLoading)
                     {
-                        <p class="text-muted">Loading AI recommendations...</p>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <img src="ai-loading.gif" alt="Loading AI recommendations..." style="height:80px; margin-right:0;" />
+                        </div>
                     }
                     else
                     {
