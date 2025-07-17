@@ -20,7 +20,13 @@
 
             <div class="col-md-10 col-12 position-relative">
                 <div class="top-row px-3 py-2 d-flex justify-content-end align-items-center shadow-sm bg-white">
-                    <LoginDisplay />
+                    
+                        @if (!string.IsNullOrEmpty(userId))
+                        {
+                            <div>Hello, @userId!
+                            <button class="nav-link btn btn-link" @onclick="BeginLogOut">Log out</button>
+                        </div>
+                        }
                     <NotificationBell />
                     <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="ms-3">About</a>
                 </div>
@@ -69,7 +75,7 @@
         {
             <main>
                 <div class="top-row px-4 d-flex justify-content-end align-items-center gap-3">
-                    <LoginDisplay />
+                    
                     <NotificationBell />
                     <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
                 </div>
@@ -86,10 +92,23 @@
     private List<AlertModel> alerts = new();
     private DotNetObjectReference<MainLayout>? objRef;
     private bool isLoading = true;
+    private string? userId;
+
+    private async Task BeginLogOut()
+    {
+        var auth0Domain = "dev-jbrriuc5vyjmiwtx.us.auth0.com";
+        var clientId = "V9Una2guriD6USXmVHCn4LVRZX9Ao479";
+        var returnUrl = Navigation.BaseUri; // Ensures return to home after logout
+
+        var logoutUrl = $"https://{auth0Domain}/v2/logout?client_id={clientId}&returnTo={Uri.EscapeDataString(returnUrl)}";
+
+        await JSRuntime.InvokeVoidAsync("logoutAuth0", logoutUrl);
+    }
 
     protected override async Task OnInitializedAsync()
     {
         AlertPanelState.OnChange += OnPanelStateChanged;
+        userId = await SecureStorage.GetItemAsync("user_id");
     }
 
     private async Task OnPanelStateChanged()
