@@ -17,7 +17,7 @@ public class MedPlumAPIService
     {
         _httpClient = httpClient.Client;
         _config = config;
-        _apiBaseUrl = $"{_config["MedPlum:ApiBaseUrl"]}";
+        _apiBaseUrl = $"{_config["ApiBaseUrl"]}";
     }
 
     public async Task<PatientProfile> GetPatientFullProfileAsync(string email)
@@ -28,7 +28,7 @@ public class MedPlumAPIService
 
         try
         {
-            var response = await _httpClient.GetAsync($"{_apiBaseUrl}/patient-full-profile/{encodedEmail}");
+            var response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/Medplum/patient-full-profile/{encodedEmail}");
 
             if (response.IsSuccessStatusCode)
             {
