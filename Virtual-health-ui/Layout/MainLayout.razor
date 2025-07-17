@@ -23,12 +23,13 @@
                     
                         @if (!string.IsNullOrEmpty(userId))
                         {
-                            <div>Hello, @userId!
-                            <button class="nav-link btn btn-link" @onclick="BeginLogOut">Log out</button>
+                        <div class="d-flex align-items-center gap-2 small text-muted justify-content-start">
+                            <span class="me-1">Hello, <strong>@userId</strong>!</span>
+                            <button class="nav-link btn btn-link me-3" @onclick="BeginLogOut">Log out</button>
                         </div>
                         }
                     <NotificationBell />
-                    <a href="https://learn.microsoft.com/aspnet/core/" target="_blank" class="ms-3">About</a>
+                  
                 </div>
 
                 <div id="alertPanel"
